@@ -1,0 +1,3 @@
+# Optional personal blocklist; apply with REJECT before general routing.
+payload:
+- DOMAIN-KEYWORD,zhihu

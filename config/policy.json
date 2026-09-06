@@ -1,0 +1,44 @@
+{
+  "schema": 1,
+  "scenes": {
+    "科学上网": {
+      "blocks": [],
+      "proxy_overrides": [],
+      "privacy": true,
+      "final": "Proxies"
+    },
+    "回国": {
+      "blocks": [],
+      "proxy_overrides": [],
+      "privacy": false,
+      "final": "DIRECT"
+    },
+    "只过滤不代理": {
+      "blocks": [],
+      "proxy_overrides": [],
+      "privacy": false,
+      "final": "DIRECT"
+    }
+  },
+  "sources": [
+    "AdvertisingLite",
+    "Hijacking",
+    "Privacy",
+    "China",
+    "Apple",
+    "OpenAI",
+    "Claude",
+    "Google",
+    "GitHub",
+    "Telegram",
+    "Netflix",
+    "YouTube",
+    "BiliBili",
+    "ChinaMedia"
+  ],
+  "direct_exceptions": [
+    "DOMAIN,captive.apple.com"
+  ],
+  "google_exceptions": [],
+  "download_processes": []
+}

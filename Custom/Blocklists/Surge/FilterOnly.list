@@ -1,0 +1,10 @@
+# Optional personal blocklist; apply with REJECT before general routing.
+DOMAIN-KEYWORD,gitlab
+DOMAIN-KEYWORD,baidu
+DOMAIN-KEYWORD,pdd
+DOMAIN-KEYWORD,video.weibocdn.com
+DOMAIN-KEYWORD,sns-video-hw.xhscdn.com
+DOMAIN-KEYWORD,sns-video-bd.xhscdn.com
+DOMAIN-KEYWORD,sns-video-qc.xhscdn.com
+DOMAIN-KEYWORD,sns-video-al.xhscdn.com
+DOMAIN-KEYWORD,fe-video-qc.xhscdn.com

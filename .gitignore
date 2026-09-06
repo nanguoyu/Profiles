@@ -1,0 +1,14 @@
+.venv/
+.cache/
+.private/
+local/
+__pycache__/
+*.pyc
+.DS_Store
+.env
+.env.*
+*.p12
+*.pfx
+*.key
+*.zip
+*-节点导入.txt

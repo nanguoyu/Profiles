@@ -1,0 +1,155 @@
+# Mihomo / Clash.MD 通用配置。Apple Packet Tunnel 由客户端管理；不设置桌面 TUN 路由。
+# 无内置节点的公共模板请先添加节点，或在本地副本中配置自己的节点。
+mode: rule
+log-level: warning
+ipv6: true
+profile:
+  store-selected: true
+dns:
+  enable: true
+  ipv6: true
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  fake-ip-filter:
+  - '*.lan'
+  - '*.local'
+  - +.ts.net
+  - localhost
+  default-nameserver:
+  - 223.5.5.5
+  - 1.1.1.1
+  nameserver: &id001
+  - https://cloudflare-dns.com/dns-query
+  - https://dns.google/dns-query
+  proxy-server-nameserver: *id001
+proxies: []
+proxy-groups:
+- name: Guard
+  type: select
+  proxies:
+  - REJECT
+  - DIRECT
+- name: 回国代理
+  type: select
+  proxies:
+  - DIRECT
+rule-providers:
+  AdvertisingLite-domain:
+    type: http
+    behavior: domain
+    format: yaml
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/5f06cacdb752a951bba8511b25eadde77ebc683c/rule/Clash/AdvertisingLite/AdvertisingLite_Domain.yaml
+    path: ./rules/AdvertisingLite-domain-5f06cacdb752.yaml
+    interval: 86400
+  AdvertisingLite-classical:
+    type: http
+    behavior: classical
+    format: yaml
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/5f06cacdb752a951bba8511b25eadde77ebc683c/rule/Clash/AdvertisingLite/AdvertisingLite.yaml
+    path: ./rules/AdvertisingLite-classical-5f06cacdb752.yaml
+    interval: 86400
+  Hijacking-classical:
+    type: http
+    behavior: classical
+    format: yaml
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/5f06cacdb752a951bba8511b25eadde77ebc683c/rule/Clash/Hijacking/Hijacking.yaml
+    path: ./rules/Hijacking-classical-5f06cacdb752.yaml
+    interval: 86400
+  ChinaMedia-classical:
+    type: http
+    behavior: classical
+    format: yaml
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/5f06cacdb752a951bba8511b25eadde77ebc683c/rule/Clash/ChinaMedia/ChinaMedia.yaml
+    path: ./rules/ChinaMedia-classical-5f06cacdb752.yaml
+    interval: 86400
+  Apple-domain:
+    type: http
+    behavior: domain
+    format: yaml
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/5f06cacdb752a951bba8511b25eadde77ebc683c/rule/Clash/Apple/Apple_Domain.yaml
+    path: ./rules/Apple-domain-5f06cacdb752.yaml
+    interval: 86400
+  Apple-classical:
+    type: http
+    behavior: classical
+    format: yaml
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/5f06cacdb752a951bba8511b25eadde77ebc683c/rule/Clash/Apple/Apple.yaml
+    path: ./rules/Apple-classical-5f06cacdb752.yaml
+    interval: 86400
+  Google-classical:
+    type: http
+    behavior: classical
+    format: yaml
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/5f06cacdb752a951bba8511b25eadde77ebc683c/rule/Clash/Google/Google.yaml
+    path: ./rules/Google-classical-5f06cacdb752.yaml
+    interval: 86400
+  GitHub-classical:
+    type: http
+    behavior: classical
+    format: yaml
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/5f06cacdb752a951bba8511b25eadde77ebc683c/rule/Clash/GitHub/GitHub.yaml
+    path: ./rules/GitHub-classical-5f06cacdb752.yaml
+    interval: 86400
+  OpenAI-classical:
+    type: http
+    behavior: classical
+    format: yaml
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/5f06cacdb752a951bba8511b25eadde77ebc683c/rule/Clash/OpenAI/OpenAI.yaml
+    path: ./rules/OpenAI-classical-5f06cacdb752.yaml
+    interval: 86400
+  Claude-classical:
+    type: http
+    behavior: classical
+    format: yaml
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/5f06cacdb752a951bba8511b25eadde77ebc683c/rule/Clash/Claude/Claude.yaml
+    path: ./rules/Claude-classical-5f06cacdb752.yaml
+    interval: 86400
+  Telegram-classical:
+    type: http
+    behavior: classical
+    format: yaml
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/5f06cacdb752a951bba8511b25eadde77ebc683c/rule/Clash/Telegram/Telegram.yaml
+    path: ./rules/Telegram-classical-5f06cacdb752.yaml
+    interval: 86400
+  Netflix-classical:
+    type: http
+    behavior: classical
+    format: yaml
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/5f06cacdb752a951bba8511b25eadde77ebc683c/rule/Clash/Netflix/Netflix.yaml
+    path: ./rules/Netflix-classical-5f06cacdb752.yaml
+    interval: 86400
+  YouTube-classical:
+    type: http
+    behavior: classical
+    format: yaml
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/5f06cacdb752a951bba8511b25eadde77ebc683c/rule/Clash/YouTube/YouTube.yaml
+    path: ./rules/YouTube-classical-5f06cacdb752.yaml
+    interval: 86400
+rules:
+- DOMAIN-SUFFIX,local,DIRECT
+- DOMAIN-SUFFIX,lan,DIRECT
+- IP-CIDR,127.0.0.0/8,DIRECT,no-resolve
+- IP-CIDR,10.0.0.0/8,DIRECT,no-resolve
+- IP-CIDR,172.16.0.0/12,DIRECT,no-resolve
+- IP-CIDR,192.168.0.0/16,DIRECT,no-resolve
+- IP-CIDR,169.254.0.0/16,DIRECT,no-resolve
+- IP-CIDR,100.64.0.0/10,DIRECT,no-resolve
+- IP-CIDR6,::1/128,DIRECT,no-resolve
+- IP-CIDR6,fc00::/7,DIRECT,no-resolve
+- IP-CIDR6,fe80::/10,DIRECT,no-resolve
+- DOMAIN,captive.apple.com,DIRECT
+- RULE-SET,AdvertisingLite-domain,Guard
+- RULE-SET,AdvertisingLite-classical,Guard,no-resolve
+- RULE-SET,Hijacking-classical,Guard,no-resolve
+- RULE-SET,ChinaMedia-classical,回国代理,no-resolve
+- RULE-SET,Apple-domain,DIRECT
+- RULE-SET,Apple-classical,DIRECT,no-resolve
+- RULE-SET,Google-classical,DIRECT,no-resolve
+- RULE-SET,GitHub-classical,DIRECT,no-resolve
+- RULE-SET,OpenAI-classical,DIRECT,no-resolve
+- RULE-SET,Claude-classical,DIRECT,no-resolve
+- RULE-SET,Telegram-classical,DIRECT,no-resolve
+- RULE-SET,Netflix-classical,DIRECT,no-resolve
+- RULE-SET,YouTube-classical,DIRECT,no-resolve
+- GEOIP,CN,回国代理
+- MATCH,DIRECT
