@@ -51,125 +51,158 @@ proxy-groups:
   proxies:
   - DIRECT
   - Proxies
+- name: Copilot
+  type: select
+  proxies:
+  - DIRECT
+  - Proxies
 rule-providers:
   AdvertisingLite-domain:
     type: http
     behavior: domain
     format: yaml
-    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/5f06cacdb752a951bba8511b25eadde77ebc683c/rule/Clash/AdvertisingLite/AdvertisingLite_Domain.yaml
-    path: ./rules/AdvertisingLite-domain-5f06cacdb752.yaml
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/5c22b5056f6288c27935489f74f8681fadbdba87/rule/Clash/AdvertisingLite/AdvertisingLite_Domain.yaml
+    path: ./rules/AdvertisingLite-domain-5c22b5056f62.yaml
     interval: 86400
   AdvertisingLite-classical:
     type: http
     behavior: classical
     format: yaml
-    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/5f06cacdb752a951bba8511b25eadde77ebc683c/rule/Clash/AdvertisingLite/AdvertisingLite.yaml
-    path: ./rules/AdvertisingLite-classical-5f06cacdb752.yaml
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/5c22b5056f6288c27935489f74f8681fadbdba87/rule/Clash/AdvertisingLite/AdvertisingLite.yaml
+    path: ./rules/AdvertisingLite-classical-5c22b5056f62.yaml
     interval: 86400
   Hijacking-classical:
     type: http
     behavior: classical
     format: yaml
-    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/5f06cacdb752a951bba8511b25eadde77ebc683c/rule/Clash/Hijacking/Hijacking.yaml
-    path: ./rules/Hijacking-classical-5f06cacdb752.yaml
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/5c22b5056f6288c27935489f74f8681fadbdba87/rule/Clash/Hijacking/Hijacking.yaml
+    path: ./rules/Hijacking-classical-5c22b5056f62.yaml
     interval: 86400
   Privacy-domain:
     type: http
     behavior: domain
     format: yaml
-    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/5f06cacdb752a951bba8511b25eadde77ebc683c/rule/Clash/Privacy/Privacy_Domain.yaml
-    path: ./rules/Privacy-domain-5f06cacdb752.yaml
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/5c22b5056f6288c27935489f74f8681fadbdba87/rule/Clash/Privacy/Privacy_Domain.yaml
+    path: ./rules/Privacy-domain-5c22b5056f62.yaml
     interval: 86400
   Privacy-classical:
     type: http
     behavior: classical
     format: yaml
-    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/5f06cacdb752a951bba8511b25eadde77ebc683c/rule/Clash/Privacy/Privacy.yaml
-    path: ./rules/Privacy-classical-5f06cacdb752.yaml
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/5c22b5056f6288c27935489f74f8681fadbdba87/rule/Clash/Privacy/Privacy.yaml
+    path: ./rules/Privacy-classical-5c22b5056f62.yaml
+    interval: 86400
+  anthropic-classical:
+    type: http
+    behavior: classical
+    format: yaml
+    url: https://raw.githubusercontent.com/VPSDance/ai-proxy-rules/c6dc8d089b5195f4a7560d537e0c000471fa377f/rules/clash/anthropic.yaml
+    path: ./rules/anthropic-classical-c6dc8d089b51.yaml
+    interval: 86400
+  openai-classical:
+    type: http
+    behavior: classical
+    format: yaml
+    url: https://raw.githubusercontent.com/VPSDance/ai-proxy-rules/c6dc8d089b5195f4a7560d537e0c000471fa377f/rules/clash/openai.yaml
+    path: ./rules/openai-classical-c6dc8d089b51.yaml
+    interval: 86400
+  google-ai-classical:
+    type: http
+    behavior: classical
+    format: yaml
+    url: https://raw.githubusercontent.com/VPSDance/ai-proxy-rules/c6dc8d089b5195f4a7560d537e0c000471fa377f/rules/clash/google-ai.yaml
+    path: ./rules/google-ai-classical-c6dc8d089b51.yaml
+    interval: 86400
+  copilot-classical:
+    type: http
+    behavior: classical
+    format: yaml
+    url: https://raw.githubusercontent.com/VPSDance/ai-proxy-rules/c6dc8d089b5195f4a7560d537e0c000471fa377f/rules/clash/copilot.yaml
+    path: ./rules/copilot-classical-c6dc8d089b51.yaml
     interval: 86400
   OpenAI-classical:
     type: http
     behavior: classical
     format: yaml
-    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/5f06cacdb752a951bba8511b25eadde77ebc683c/rule/Clash/OpenAI/OpenAI.yaml
-    path: ./rules/OpenAI-classical-5f06cacdb752.yaml
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/5c22b5056f6288c27935489f74f8681fadbdba87/rule/Clash/OpenAI/OpenAI.yaml
+    path: ./rules/OpenAI-classical-5c22b5056f62.yaml
     interval: 86400
   Claude-classical:
     type: http
     behavior: classical
     format: yaml
-    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/5f06cacdb752a951bba8511b25eadde77ebc683c/rule/Clash/Claude/Claude.yaml
-    path: ./rules/Claude-classical-5f06cacdb752.yaml
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/5c22b5056f6288c27935489f74f8681fadbdba87/rule/Clash/Claude/Claude.yaml
+    path: ./rules/Claude-classical-5c22b5056f62.yaml
     interval: 86400
   Telegram-classical:
     type: http
     behavior: classical
     format: yaml
-    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/5f06cacdb752a951bba8511b25eadde77ebc683c/rule/Clash/Telegram/Telegram.yaml
-    path: ./rules/Telegram-classical-5f06cacdb752.yaml
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/5c22b5056f6288c27935489f74f8681fadbdba87/rule/Clash/Telegram/Telegram.yaml
+    path: ./rules/Telegram-classical-5c22b5056f62.yaml
     interval: 86400
   Netflix-classical:
     type: http
     behavior: classical
     format: yaml
-    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/5f06cacdb752a951bba8511b25eadde77ebc683c/rule/Clash/Netflix/Netflix.yaml
-    path: ./rules/Netflix-classical-5f06cacdb752.yaml
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/5c22b5056f6288c27935489f74f8681fadbdba87/rule/Clash/Netflix/Netflix.yaml
+    path: ./rules/Netflix-classical-5c22b5056f62.yaml
     interval: 86400
   YouTube-classical:
     type: http
     behavior: classical
     format: yaml
-    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/5f06cacdb752a951bba8511b25eadde77ebc683c/rule/Clash/YouTube/YouTube.yaml
-    path: ./rules/YouTube-classical-5f06cacdb752.yaml
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/5c22b5056f6288c27935489f74f8681fadbdba87/rule/Clash/YouTube/YouTube.yaml
+    path: ./rules/YouTube-classical-5c22b5056f62.yaml
     interval: 86400
   Google-classical:
     type: http
     behavior: classical
     format: yaml
-    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/5f06cacdb752a951bba8511b25eadde77ebc683c/rule/Clash/Google/Google.yaml
-    path: ./rules/Google-classical-5f06cacdb752.yaml
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/5c22b5056f6288c27935489f74f8681fadbdba87/rule/Clash/Google/Google.yaml
+    path: ./rules/Google-classical-5c22b5056f62.yaml
     interval: 86400
   GitHub-classical:
     type: http
     behavior: classical
     format: yaml
-    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/5f06cacdb752a951bba8511b25eadde77ebc683c/rule/Clash/GitHub/GitHub.yaml
-    path: ./rules/GitHub-classical-5f06cacdb752.yaml
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/5c22b5056f6288c27935489f74f8681fadbdba87/rule/Clash/GitHub/GitHub.yaml
+    path: ./rules/GitHub-classical-5c22b5056f62.yaml
     interval: 86400
   BiliBili-classical:
     type: http
     behavior: classical
     format: yaml
-    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/5f06cacdb752a951bba8511b25eadde77ebc683c/rule/Clash/BiliBili/BiliBili.yaml
-    path: ./rules/BiliBili-classical-5f06cacdb752.yaml
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/5c22b5056f6288c27935489f74f8681fadbdba87/rule/Clash/BiliBili/BiliBili.yaml
+    path: ./rules/BiliBili-classical-5c22b5056f62.yaml
     interval: 86400
   Apple-domain:
     type: http
     behavior: domain
     format: yaml
-    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/5f06cacdb752a951bba8511b25eadde77ebc683c/rule/Clash/Apple/Apple_Domain.yaml
-    path: ./rules/Apple-domain-5f06cacdb752.yaml
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/5c22b5056f6288c27935489f74f8681fadbdba87/rule/Clash/Apple/Apple_Domain.yaml
+    path: ./rules/Apple-domain-5c22b5056f62.yaml
     interval: 86400
   Apple-classical:
     type: http
     behavior: classical
     format: yaml
-    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/5f06cacdb752a951bba8511b25eadde77ebc683c/rule/Clash/Apple/Apple.yaml
-    path: ./rules/Apple-classical-5f06cacdb752.yaml
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/5c22b5056f6288c27935489f74f8681fadbdba87/rule/Clash/Apple/Apple.yaml
+    path: ./rules/Apple-classical-5c22b5056f62.yaml
     interval: 86400
   China-domain:
     type: http
     behavior: domain
     format: yaml
-    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/5f06cacdb752a951bba8511b25eadde77ebc683c/rule/Clash/China/China_Domain.yaml
-    path: ./rules/China-domain-5f06cacdb752.yaml
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/5c22b5056f6288c27935489f74f8681fadbdba87/rule/Clash/China/China_Domain.yaml
+    path: ./rules/China-domain-5c22b5056f62.yaml
     interval: 86400
   China-classical:
     type: http
     behavior: classical
     format: yaml
-    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/5f06cacdb752a951bba8511b25eadde77ebc683c/rule/Clash/China/China.yaml
-    path: ./rules/China-classical-5f06cacdb752.yaml
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/5c22b5056f6288c27935489f74f8681fadbdba87/rule/Clash/China/China.yaml
+    path: ./rules/China-classical-5c22b5056f62.yaml
     interval: 86400
 rules:
 - DOMAIN-SUFFIX,local,DIRECT
@@ -189,6 +222,10 @@ rules:
 - RULE-SET,Hijacking-classical,Guard,no-resolve
 - RULE-SET,Privacy-domain,Guard
 - RULE-SET,Privacy-classical,Guard,no-resolve
+- RULE-SET,anthropic-classical,AI,no-resolve
+- RULE-SET,openai-classical,AI,no-resolve
+- RULE-SET,google-ai-classical,AI,no-resolve
+- RULE-SET,copilot-classical,Copilot,no-resolve
 - RULE-SET,OpenAI-classical,AI,no-resolve
 - RULE-SET,Claude-classical,AI,no-resolve
 - RULE-SET,Telegram-classical,Proxies,no-resolve

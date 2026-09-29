@@ -124,22 +124,29 @@ def main():
     lock = profiles.load_lock()
     profiles.hydrate(lock)
     resources = {}
-    for client, categories in lock['clients'].items():
-        resources[client] = {}
-        for category, parts in categories.items():
-            if category in ('AdvertisingLite', 'Privacy', 'China', 'Apple'):
-                require(any(r['kind'] == 'domain' for r in parts), 'Missing split domain source')
-            for r in parts:
-                require('/' + lock['commit'] + '/' in r['url'], 'Unpinned source')
-                payload = profiles.entries((profiles.CACHE / lock['commit'] / r['key']).read_bytes(), r['kind'], client)
-                require(len(payload) == r['entries'], 'Source count changed')
-                key = category + '-' + r['kind'] if client == 'Clash' else r['url']
-                resources[client][key] = (r['kind'], payload)
+    for cache, ref, client, category, r in profiles.resources(lock):
+        if category in ('AdvertisingLite', 'Privacy', 'China', 'Apple'):
+            resources.setdefault(client, {}).setdefault('_domain', set())
+            if r['kind'] == 'domain':
+                resources[client]['_domain'].add(category)
+        require('/' + ref + '/' in r['url'], 'Unpinned source')
+        payload = profiles.entries((cache / ref / r['key']).read_bytes(), r['kind'], client)
+        require(len(payload) == r['entries'], 'Source count changed')
+        key = category + '-' + r['kind'] if client == 'Clash' else r['url']
+        resources.setdefault(client, {})[key] = (r['kind'], payload)
+    for client in profiles.CLIENTS:
+        require(resources[client].pop('_domain') == {'AdvertisingLite', 'Privacy', 'China', 'Apple'},
+                f'{client}: missing split domain source')
+    total_resources = sum(1 for _ in profiles.resources(lock))
     roots = [profiles.ROOT]
     cases = {
-        '科学上网': [('chatgpt.com', 'AI'), ('api.openai.com', 'AI'), ('claude.ai', 'AI'), ('github.com', 'Proxies'), ('www.google.com', 'Proxies'), ('www.bilibili.com', 'Bilibili'), ('captive.apple.com', 'DIRECT'), ('example.invalid', 'Proxies')],
-        '回国': [('www.bilibili.com', '回国代理'), ('www.google.com', 'DIRECT'), ('paypal.com', 'DIRECT'), ('chatgpt.com', 'DIRECT'), ('example.invalid', 'DIRECT')],
-        '只过滤不代理': [('www.google.com', 'DIRECT'), ('github.com', 'DIRECT'), ('example.invalid', 'DIRECT')],
+        '科学上网': [('chatgpt.com', 'AI'), ('api.openai.com', 'AI'), ('claude.ai', 'AI'), ('github.com', 'Proxies'), ('www.google.com', 'Proxies'), ('www.bilibili.com', 'Bilibili'), ('captive.apple.com', 'DIRECT'), ('example.invalid', 'Proxies'),
+                     # Supplemental AI sources: domains the pinned blackmatrix7 lists do not cover.
+                     ('sora.com', 'AI'), ('chat.com', 'AI'), ('claude.com', 'AI'), ('claudeusercontent.com', 'AI'), ('platform.claude.com', 'AI'), ('mcp-proxy.anthropic.com', 'AI'), ('gemini.google.com', 'AI'), ('notebooklm.google.com', 'AI'), ('copilot.microsoft.com', 'Copilot')],
+        '回国': [('www.bilibili.com', '回国代理'), ('www.google.com', 'DIRECT'), ('paypal.com', 'DIRECT'), ('chatgpt.com', 'DIRECT'), ('example.invalid', 'DIRECT'),
+                 ('claude.com', 'DIRECT'), ('claudeusercontent.com', 'DIRECT'), ('sora.com', 'DIRECT'), ('gemini.google.com', 'DIRECT'), ('copilot.microsoft.com', 'DIRECT')],
+        '只过滤不代理': [('www.google.com', 'DIRECT'), ('github.com', 'DIRECT'), ('example.invalid', 'DIRECT'),
+                         ('claude.com', 'DIRECT'), ('sora.com', 'DIRECT')],
     }
     count = checks = native = 0
     for root in roots:
@@ -153,6 +160,16 @@ def main():
                 require(sum(r.startswith(('FINAL,', 'MATCH,')) for r in rules) == 1, 'Unreachable rules after final')
                 require(all(target(r) in set(groups) | nodes | {'DIRECT', 'REJECT'} for r in rules), 'Undefined rule policy')
                 require('policy-path=' not in path.read_text() and 'proxy-providers:' not in path.read_text(), 'Retired subscriptions remain')
+                # Every supplemental AI source must be wired in the routing scenes; only 科学上网
+                # defines their selectable groups (回国/仅过滤 keep AI traffic explicitly DIRECT).
+                wired = ' '.join(rules)
+                for source, group in profiles.POLICY['ai_sources'].items():
+                    if scene == '只过滤不代理':
+                        require(source not in wired, f'{client}/{scene}: filtering-only profile references an AI source')
+                        continue
+                    require(any(source in r for r in rules), f'{client}/{scene}: {source} not wired')
+                    if scene == '科学上网':
+                        require(group in groups, f'{client}/{scene}: {group} group undefined')
                 if scene == '回国':
                     require(groups['回国代理'][0] == 'DIRECT', 'Unconfirmed return node selected automatically')
                 for domain, expected in cases[scene]:
@@ -170,8 +187,8 @@ def main():
                         if args.mmdb:
                             profiles.atomic(home / 'Country.mmdb', args.mmdb.read_bytes())
                         for provider in data['rule-providers'].values():
-                            r = next(r for parts in lock['clients']['Clash'].values() for r in parts if r['url'] == provider['url'])
-                            profiles.atomic(home / provider['path'], (profiles.CACHE / lock['commit'] / r['key']).read_bytes())
+                            cache, ref, r = next((c, f, x) for c, f, _cl, _cat, x in profiles.resources(lock) if x['url'] == provider['url'])
+                            profiles.atomic(home / provider['path'], (cache / ref / r['key']).read_bytes())
                         run = subprocess.run([str(args.mihomo.resolve()), '-t', '-d', str(home), '-f', str(path)], capture_output=True, text=True, timeout=60)
                         # Raw errors can contain private proxy fields; save only locally on failure.
                         if run.returncode:
@@ -192,7 +209,7 @@ def main():
                 actual = any(matches(rule, domain, None) for rule in payload)
                 require(actual == expected, 'Optional blocklist scope regression')
                 optional_checks += 1
-    result = {'profiles': count, 'routing_assertions': checks, 'mihomo_native_checks': native, 'source_resources': sum(len(x) for x in resources.values()), 'optional_blocklist_assertions': optional_checks, 'result': 'passed'}
+    result = {'profiles': count, 'routing_assertions': checks, 'mihomo_native_checks': native, 'source_resources': total_resources, 'optional_blocklist_assertions': optional_checks, 'result': 'passed'}
     print(json.dumps(result, ensure_ascii=False))
 
 

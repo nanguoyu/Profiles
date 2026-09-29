@@ -14,9 +14,11 @@ Surge、Mihomo 系 Clash（包括 Clash.MD/Hako）与 Shadowrocket 的公共规�
 
 使用 [blackmatrix7/ios_rule_script](https://github.com/blackmatrix7/ios_rule_script) 的客户端专用资源：AdvertisingLite、Hijacking、Privacy、China、Apple、OpenAI、Claude、Google、GitHub、Telegram、Netflix、YouTube、BiliBili、ChinaMedia。
 
+AI 服务另有补充来源 [VPSDance/ai-proxy-rules](https://github.com/VPSDance/ai-proxy-rules)（MIT）的 anthropic、openai、google-ai、copilot 四类：上游 OpenAI 与 Claude 列表停在 2025-06-06，Claude 仅 3 条，缺少 `claude.com`、`claudeusercontent.com`、MCP 域名、`sora.com`、`chat.com`、Gemini 与 Copilot；补充规则在过滤之后分类，出国指向 `AI`（Copilot 为独立 `Copilot` 组），回国明确直连，仅过滤场景不引用。两处来源各自锁定提交，见 [sources.lock.json](config/sources.lock.json) 的 `commit` 与 `ai.commit`。
+
 源版本锁定在 [sources.lock.json](config/sources.lock.json)，记录完整提交 SHA、每个文件的 SHA-256、条数和源文件更新时间。AdvertisingLite、Privacy、China、Apple 的 domain 与 classical 文件分别引用，避免漏掉上游拆分的域名列表。客户端刷新同一 URL 不会越过锁定版本；更新需运行下方 refresh 命令并发布新的模板。
 
-顺序为本地/私网直连、通用连通性放行、广告/劫持过滤、服务分类、地区判断、最终策略。出国场景另启用 Privacy。回国采用 ChinaMedia 和 GEOIP CN，并将常见海外服务优先直连；不把包含海外直连例外的整份 China 列表当作回国列表。公共模板没有个人域名屏蔽或个人应用例外。
+顺序为本地/私网直连、通用连通性放行、广告/劫持过滤、AI 分类、服务分类、地区判断、最终策略。出国场景另启用 Privacy。回国采用 ChinaMedia 和 GEOIP CN，并将常见海外服务优先直连；不把包含海外直连例外的整份 China 列表当作回国列表。过滤规则始终先于分类，因此出现在 Privacy 里的供应商域名（如 `featuregates.org`）仍会被 Guard 拦截，这也是 Guard 默认 REJECT 提供临时 DIRECT 排查的原因。公共模板没有个人域名屏蔽或个人应用例外。
 
 ## 更新与验证
 
@@ -48,11 +50,11 @@ Clash 使用 Mihomo 支持的 rule-providers、策略组和 DNS 字段；[Clash.
 
 Surge 原有 `Surge/Outbound.conf` 与 `Surge/Inbound.conf` 入口已更新为新模板。原 `Surge/Ruleset`、`Clash/RuleSet`、模块、重写和 Quantumult 目录保留作历史兼容资源，**本次未更新，新的模板也不依赖它们**。旧用户需要主动迁移配置入口；单独订阅历史规则文件不会自动获得新版数据。过时的说明保存在 [历史 README](docs/LEGACY-README.md) 与 [历史 Surge 说明](docs/LEGACY-Surge-README.md)，其中旧链接仅供追溯。
 
-参见 [本次更新记录](docs/UPDATE-2026-09-06.md)。
+参见 [本次更新记录](docs/UPDATE-2026-09-06.md) 与 [上游刷新与 AI 规则补充](docs/UPDATE-2026-09-29.md)。
 
 ## 来源与许可
 
-引用的规则数据来自 blackmatrix7/ios_rule_script，按其 GPL-2.0 许可使用；下载缓存不纳入仓库。历史规则及作者致谢保留在历史 README。Shadowrocket 格式参考 [LOWERTOP/Shadowrocket](https://github.com/LOWERTOP/Shadowrocket) 的维护者示例。
+引用的规则数据来自 blackmatrix7/ios_rule_script，按其 GPL-2.0 许可使用；AI 补充规则来自 VPSDance/ai-proxy-rules（MIT）。下载缓存不纳入仓库。历史规则及作者致谢保留在历史 README。Shadowrocket 格式参考 [LOWERTOP/Shadowrocket](https://github.com/LOWERTOP/Shadowrocket) 的维护者示例。
 
 ## 可选个人屏蔽列表
 

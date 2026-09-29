@@ -34,22 +34,22 @@ rule-providers:
     type: http
     behavior: domain
     format: yaml
-    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/5f06cacdb752a951bba8511b25eadde77ebc683c/rule/Clash/AdvertisingLite/AdvertisingLite_Domain.yaml
-    path: ./rules/AdvertisingLite-domain-5f06cacdb752.yaml
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/5c22b5056f6288c27935489f74f8681fadbdba87/rule/Clash/AdvertisingLite/AdvertisingLite_Domain.yaml
+    path: ./rules/AdvertisingLite-domain-5c22b5056f62.yaml
     interval: 86400
   AdvertisingLite-classical:
     type: http
     behavior: classical
     format: yaml
-    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/5f06cacdb752a951bba8511b25eadde77ebc683c/rule/Clash/AdvertisingLite/AdvertisingLite.yaml
-    path: ./rules/AdvertisingLite-classical-5f06cacdb752.yaml
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/5c22b5056f6288c27935489f74f8681fadbdba87/rule/Clash/AdvertisingLite/AdvertisingLite.yaml
+    path: ./rules/AdvertisingLite-classical-5c22b5056f62.yaml
     interval: 86400
   Hijacking-classical:
     type: http
     behavior: classical
     format: yaml
-    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/5f06cacdb752a951bba8511b25eadde77ebc683c/rule/Clash/Hijacking/Hijacking.yaml
-    path: ./rules/Hijacking-classical-5f06cacdb752.yaml
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/5c22b5056f6288c27935489f74f8681fadbdba87/rule/Clash/Hijacking/Hijacking.yaml
+    path: ./rules/Hijacking-classical-5c22b5056f62.yaml
     interval: 86400
 rules:
 - DOMAIN-SUFFIX,local,DIRECT

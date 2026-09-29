@@ -16,11 +16,15 @@ ROOT = Path(__file__).resolve().parents[1]
 CONFIG = ROOT / 'config'
 PROFILE_NAMES = {'科学上网': 'Outbound', '回国': 'Inbound', '只过滤不代理': 'FilterOnly'}
 REPO = 'blackmatrix7/ios_rule_script'
+AI_REPO = 'VPSDance/ai-proxy-rules'
+AI_PREFIX = 'AI:'
 CLIENTS = ('Surge', 'Clash', 'Shadowrocket')
 POLICY = json.loads((CONFIG / 'policy.json').read_text())
 LOCK = CONFIG / 'sources.lock.json'
 CACHE = ROOT / '.cache' / 'rules'
+AI_CACHE = ROOT / '.cache' / 'ai-rules'
 TEST_URL = 'https://cp.cloudflare.com/generate_204'
+SOURCE_GROUPS = ('clients', 'ai')
 
 
 def atomic(path, data):
@@ -66,10 +70,31 @@ def entries(data, kind, client):
         if any(',' in x or '://' in x or '<' in x or ' ' in x for x in result):
             raise ValueError('Invalid domain payload')
     else:
-        allowed = {'DOMAIN', 'DOMAIN-SUFFIX', 'DOMAIN-KEYWORD', 'DOMAIN-WILDCARD', 'IP-CIDR', 'IP-CIDR6', 'IP-ASN', 'USER-AGENT', 'PROCESS-NAME', 'PROCESS-PATH', 'URL-REGEX', 'AND', 'OR', 'NOT', 'DST-PORT', 'DEST-PORT', 'NETWORK', 'PROTOCOL'}
+        allowed = {'DOMAIN', 'DOMAIN-SUFFIX', 'DOMAIN-KEYWORD', 'DOMAIN-WILDCARD', 'DOMAIN-REGEX', 'IP-CIDR', 'IP-CIDR6', 'IP-ASN', 'USER-AGENT', 'PROCESS-NAME', 'PROCESS-PATH', 'URL-REGEX', 'AND', 'OR', 'NOT', 'DST-PORT', 'DEST-PORT', 'NETWORK', 'PROTOCOL'}
         if any(x.split(',')[0] not in allowed for x in result):
             raise ValueError('Unexpected rule type or embedded policy in source')
     return result
+
+
+def load_resource(cache, ref, key, url, kind, client, optional=False):
+    data = get(url, optional=optional)
+    if data is None:
+        return None
+    parsed = entries(data, kind, client)
+    atomic(cache / ref / key, data)
+    updated = re.search(r'^# UPDATED:\s*(.+)$', data.decode('utf-8-sig'), re.M)
+    return {'key': key, 'kind': kind, 'url': url, 'sha256': hashlib.sha256(data).hexdigest(),
+            'bytes': len(data), 'entries': len(parsed), 'source_updated': updated[1] if updated else None}
+
+
+def discover_ai(ref, client, provider):
+    """Supplemental AI rules ship one classical file per provider and client."""
+    extension = '.yaml' if client == 'Clash' else '.list'
+    url = f'https://raw.githubusercontent.com/{AI_REPO}/{ref}/rules/{client.lower()}/{provider}{extension}'
+    resource = load_resource(AI_CACHE, ref, f'{client}-AI-{provider}', url, 'classical', client)
+    if resource is None:
+        raise ValueError(f'{AI_REPO} is missing {client}/{provider}')
+    return client, provider, [resource]
 
 
 def discover(ref, client, category):
@@ -78,16 +103,10 @@ def discover(ref, client, category):
     filenames = [('domain', category + ('_Domain.yaml' if client == 'Clash' else '_Domain.list')),
                  ('classical', category + ('.yaml' if client == 'Clash' else '.list'))]
     for kind, filename in filenames:
-        url = base + filename
-        data = get(url, optional=(kind == 'domain'))
-        if data is None:
-            continue
-        parsed = entries(data, kind, client)
-        key = f'{client}-{category}-{kind}'
-        atomic(CACHE / ref / key, data)
-        updated = re.search(r'^# UPDATED:\s*(.+)$', data.decode('utf-8-sig'), re.M)
-        resources.append({'key': key, 'kind': kind, 'url': url, 'sha256': hashlib.sha256(data).hexdigest(),
-                          'bytes': len(data), 'entries': len(parsed), 'source_updated': updated[1] if updated else None})
+        resource = load_resource(CACHE, ref, f'{client}-{category}-{kind}', base + filename, kind, client,
+                                 optional=(kind == 'domain'))
+        if resource is not None:
+            resources.append(resource)
     # A split source cannot silently become a tiny incomplete classical list.
     text = (CACHE / ref / f'{client}-{category}-classical').read_text()
     counts = re.findall(r'^# (?:DOMAIN|DOMAIN-SUFFIX):\s*(\d+)', text, re.M)
@@ -105,6 +124,9 @@ def refresh(ref=None):
         ref = data['sha']
     if not re.fullmatch('[a-f0-9]{40}', ref):
         raise ValueError('Use a full immutable commit SHA')
+    ai_ref = json.loads(get(f'https://api.github.com/repos/{AI_REPO}/commits/main'))['sha']
+    if not re.fullmatch('[a-f0-9]{40}', ai_ref):
+        raise ValueError(f'Use a full immutable commit SHA for {AI_REPO}')
     result = {'schema': 1, 'repository': REPO, 'commit': ref, 'clients': {c: {} for c in CLIENTS}}
     jobs = [(ref, c, name) for c in CLIENTS for name in POLICY['sources']]
     with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
@@ -112,6 +134,14 @@ def refresh(ref=None):
         for future in concurrent.futures.as_completed(futures):
             client, name, resources = future.result()
             result['clients'][client][name] = resources
+            print(f'{client}/{name}: {sum(x["entries"] for x in resources)} entries')
+    result['ai'] = {'repository': AI_REPO, 'commit': ai_ref, 'clients': {c: {} for c in CLIENTS}}
+    ai_jobs = [(ai_ref, c, name) for c in CLIENTS for name in POLICY['ai_sources']]
+    with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
+        futures = [executor.submit(discover_ai, *args) for args in ai_jobs]
+        for future in concurrent.futures.as_completed(futures):
+            client, name, resources = future.result()
+            result['ai']['clients'][client][name] = resources
             print(f'{client}/{name}: {sum(x["entries"] for x in resources)} entries')
     # Publish the lock only once every selected source has been validated.
     atomic(LOCK, json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True) + '\n')
@@ -121,13 +151,26 @@ def refresh(ref=None):
 def load_lock():
     lock = json.loads(LOCK.read_text())
     assert lock['repository'] == REPO and re.fullmatch('[a-f0-9]{40}', lock['commit'])
+    assert lock['ai']['repository'] == AI_REPO and re.fullmatch('[a-f0-9]{40}', lock['ai']['commit'])
     return lock
 
 
+def resources(lock):
+    """Every pinned resource, whatever source group it belongs to."""
+    for group in SOURCE_GROUPS:
+        section = lock['ai'] if group == 'ai' else lock
+        cache = AI_CACHE if group == 'ai' else CACHE
+        for client, categories in section['clients'].items():
+            for name, parts in categories.items():
+                for resource in parts:
+                    yield cache, section['commit'], client, name, resource
+
+
 def hydrate(lock, network=False):
-    jobs = [r for categories in lock['clients'].values() for resources in categories.values() for r in resources]
-    def one(resource):
-        path = CACHE / lock['commit'] / resource['key']
+    jobs = list(resources(lock))
+    def one(job):
+        cache, ref, _client, _name, resource = job
+        path = cache / ref / resource['key']
         if not path.exists():
             if not network:
                 raise ValueError('Missing cached source. Run: tools/profiles.py fetch')
@@ -173,6 +216,13 @@ def logical_rules(scene, client):
     if client == 'Surge' and scene != '只过滤不代理':
         for process in POLICY['download_processes']:
             literal('PROCESS-NAME,' + process, 'DIRECT')
+    if scene != '只过滤不代理':
+        # Supplemental AI rules are classified after filtering, so a vendor entry in a Guard list
+        # (e.g. featuregates.org) still needs reviewing whenever the pinned AI sources move.
+        # 科学上网 sends them to their own selectable group; 回国 keeps them explicitly direct,
+        # matching the pinned OpenAI/Claude behaviour. The AI: name keeps the lock lookup apart.
+        for name, group in POLICY['ai_sources'].items():
+            resource(AI_PREFIX + name, group if scene == '科学上网' else 'DIRECT')
     if scene == '科学上网':
         for name, target in [('OpenAI', 'AI'), ('Claude', 'AI'), ('Telegram', 'Proxies'), ('Netflix', 'Netflix'), ('YouTube', 'Proxies'), ('Google', 'Proxies'), ('GitHub', 'Proxies'), ('BiliBili', 'Bilibili'), ('Apple', 'Apple'), ('China', 'DIRECT')]:
             resource(name, target)
@@ -196,21 +246,30 @@ def attach(expression, target, client):
     return expression + ',' + target
 
 
+def category_resources(lock, client, name):
+    """Supplemental AI sources live under lock['ai'] with their own pinned commit."""
+    section = lock['ai'] if name.startswith(AI_PREFIX) else lock
+    category = name[len(AI_PREFIX):] if name.startswith(AI_PREFIX) else name
+    return section['clients'][client][category], section['commit']
+
+
 def rendered_rules(scene, client, lock):
     rules, providers = [], {}
     for kind, expression, target in logical_rules(scene, client):
         if kind == 'literal':
             rules.append(attach(expression, target, client))
             continue
-        for resource in lock['clients'][client][expression]:
-            if client == 'Clash':
-                name = expression + '-' + resource['kind']
-                providers[name] = {'type': 'http', 'behavior': resource['kind'], 'format': 'yaml',
-                                   'url': resource['url'], 'path': './rules/' + name + '-' + lock['commit'][:12] + '.yaml', 'interval': 86400}
-                rules.append(f'RULE-SET,{name},{target}' + (',no-resolve' if resource['kind'] == 'classical' else ''))
-            else:
-                prefix = 'DOMAIN-SET' if resource['kind'] == 'domain' else 'RULE-SET'
-                rules.append(f'{prefix},{resource["url"]},{target}' + (',no-resolve' if prefix == 'RULE-SET' else ''))
+        for section, commit in [category_resources(lock, client, expression)]:
+            for resource in section:
+                if client == 'Clash':
+                    # Provider names and cache paths stay free of the AI: namespace used for lookups.
+                    name = expression.removeprefix(AI_PREFIX) + '-' + resource['kind']
+                    providers[name] = {'type': 'http', 'behavior': resource['kind'], 'format': 'yaml',
+                                       'url': resource['url'], 'path': './rules/' + name + '-' + commit[:12] + '.yaml', 'interval': 86400}
+                    rules.append(f'RULE-SET,{name},{target}' + (',no-resolve' if resource['kind'] == 'classical' else ''))
+                else:
+                    prefix = 'DOMAIN-SET' if resource['kind'] == 'domain' else 'RULE-SET'
+                    rules.append(f'{prefix},{resource["url"]},{target}' + (',no-resolve' if prefix == 'RULE-SET' else ''))
     return rules, providers
 
 
@@ -222,6 +281,11 @@ def basic_groups(scene, client):
         groups.update({'AI': ['Proxies'], 'Netflix': ['Proxies'], 'Apple': ['DIRECT', 'Proxies'], 'Bilibili': ['DIRECT', 'Proxies']})
     elif scene == '回国':
         groups['回国代理'] = ['DIRECT', 'PROXY'] if client == 'Shadowrocket' else ['DIRECT']
+    if scene == '科学上网':
+        # Supplemental AI sources are referenced by the AI/Copilot groups, which only exist here.
+        for target in dict.fromkeys(POLICY['ai_sources'].values()):
+            if target not in groups:
+                groups[target] = ['DIRECT', 'Proxies']
     return groups
 
 
@@ -231,7 +295,7 @@ def conf_section(name, lines):
 
 def conf(scene, client, lock):
     lines, _ = rendered_rules(scene, client, lock)
-    header = f'# {scene} | {client} | rules {lock["commit"][:12]}\n'
+    header = f'# {scene} | {client} | rules {lock["commit"][:12]} | ai {lock["ai"]["commit"][:12]}\n'
     header += '# 公共模板不含节点。使用规则模式；自定义公共策略后重新生成。\n'
     header += '# 回国出口未确认时保持 DIRECT；测速不判断地区解锁。\n'
     header += '# Shadowrocket 节点在首页管理；Surge 模板请在本地副本中添加节点。\n\n'

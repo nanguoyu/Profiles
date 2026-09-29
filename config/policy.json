@@ -36,6 +36,12 @@
     "BiliBili",
     "ChinaMedia"
   ],
+  "ai_sources": {
+    "anthropic": "AI",
+    "openai": "AI",
+    "google-ai": "AI",
+    "copilot": "Copilot"
+  },
   "direct_exceptions": [
     "DOMAIN,captive.apple.com"
   ],
