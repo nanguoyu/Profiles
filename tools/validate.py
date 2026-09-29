@@ -41,6 +41,11 @@ def require(condition, message):
         raise ValueError(message)
 
 
+def provider_of(name):
+    """Lock names for the AI supplements are bare; logical names carry the AI: namespace."""
+    return name.removeprefix(profiles.AI_PREFIX)
+
+
 def read_profile(path, client):
     if client == 'Clash':
         data = yaml.safe_load(path.read_text())
@@ -133,6 +138,14 @@ def main():
         payload = profiles.entries((cache / ref / r['key']).read_bytes(), r['kind'], client, category)
         require(len(payload) == r['entries'], 'Source count changed')
         key = category + '-' + r['kind'] if client == 'Clash' else r['url']
+        if provider_of(category) in profiles.POLICY['ai_sources']:
+            # Generated profiles reference the local snapshot, so route against that exact content.
+            path = profiles.snapshot_path(client, category, r['kind'])
+            require(path.exists(), f'missing AI snapshot: {path}')
+            require(profiles.entries(path.read_bytes(), r['kind'], client) == payload,
+                    f'{client}/{category}: snapshot does not match the pinned source')
+            key = profiles.snapshot_url(lock, client, profiles.AI_PREFIX + provider_of(category), r) if client != 'Clash' \
+                else provider_of(category) + '-' + r['kind']
         resources.setdefault(client, {})[key] = (r['kind'], payload)
     for client in profiles.CLIENTS:
         require(resources[client].pop('_domain') == {'AdvertisingLite', 'Privacy', 'China', 'Apple'},
@@ -145,7 +158,7 @@ def main():
             if name != category:
                 continue
             raw = profiles.entries((cache / ref / r['key']).read_bytes(), r['kind'], client)
-            effective = resources[client][(name + '-' + r['kind']) if client == 'Clash' else r['url']][1]
+            effective = profiles.snapshot_payload(lock, client, category, r)
             for expression in denied:
                 needle = expression.strip().lower()
                 require(needle in {x.strip().lower() for x in raw},
@@ -181,6 +194,15 @@ def main():
                 require(sum(r.startswith(('FINAL,', 'MATCH,')) for r in rules) == 1, 'Unreachable rules after final')
                 require(all(target(r) in set(groups) | nodes | {'DIRECT', 'REJECT'} for r in rules), 'Undefined rule policy')
                 require('policy-path=' not in path.read_text() and 'proxy-providers:' not in path.read_text(), 'Retired subscriptions remain')
+                # AI supplements must be served from our own snapshots, never upstream, so the
+                # keyword denylist cannot be bypassed by whatever upstream serves next. Clash keeps
+                # the URL in its rule-provider definition; the other clients put it on the rule.
+                urls = [p['url'] for p in data['rule-providers'].values()] if client == 'Clash' else rules
+                require(not any(profiles.AI_REPO in u for u in urls),
+                        f'{client}/{scene}: profile still references {profiles.AI_REPO} directly')
+                if scene != '只过滤不代理':
+                    require(sum(1 for u in urls if 'AISources/' in u) == len(profiles.POLICY['ai_sources']),
+                            f'{client}/{scene}: expected one snapshot reference per AI source')
                 # Every supplemental AI source must be wired in the routing scenes; only 科学上网
                 # defines their selectable groups (回国/仅过滤 keep AI traffic explicitly DIRECT).
                 wired = ' '.join(rules)
@@ -226,8 +248,17 @@ def main():
                         home.mkdir(parents=True, exist_ok=True)
                         if args.mmdb:
                             profiles.atomic(home / 'Country.mmdb', args.mmdb.read_bytes())
+                        # Clash providers are keyed by the URL the profile publishes, which for AI
+                        # supplements is the snapshot URL rather than the pinned upstream one.
+                        by_url = {}
+                        for cache, ref, client_name, category, r in profiles.resources(lock):
+                            if client_name != 'Clash':
+                                continue
+                            url = profiles.snapshot_url(lock, 'Clash', profiles.AI_PREFIX + provider_of(category), r) \
+                                if provider_of(category) in profiles.POLICY['ai_sources'] else r['url']
+                            by_url[url] = (cache, ref, r)
                         for provider in data['rule-providers'].values():
-                            cache, ref, r = next((c, f, x) for c, f, _cl, _cat, x in profiles.resources(lock) if x['url'] == provider['url'])
+                            cache, ref, r = by_url[provider['url']]
                             profiles.atomic(home / provider['path'], (cache / ref / r['key']).read_bytes())
                         run = subprocess.run([str(args.mihomo.resolve()), '-t', '-d', str(home), '-f', str(path)], capture_output=True, text=True, timeout=60)
                         # Raw errors can contain private proxy fields; save only locally on failure.

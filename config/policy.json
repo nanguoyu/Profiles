@@ -47,6 +47,7 @@
       "DOMAIN-KEYWORD,sift"
     ]
   },
+  "raw_base": "https://raw.githubusercontent.com/nanguoyu/Profiles/main/",
   "direct_exceptions": [
     "DOMAIN,captive.apple.com"
   ],

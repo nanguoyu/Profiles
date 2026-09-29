@@ -23,8 +23,11 @@ POLICY = json.loads((CONFIG / 'policy.json').read_text())
 LOCK = CONFIG / 'sources.lock.json'
 CACHE = ROOT / '.cache' / 'rules'
 AI_CACHE = ROOT / '.cache' / 'ai-rules'
+SNAPSHOT = ROOT / 'AISources'
 TEST_URL = 'https://cp.cloudflare.com/generate_204'
 SOURCE_GROUPS = ('clients', 'ai')
+# Where the locally served AI snapshots are published; override in policy.json for a fork.
+RAW_BASE = POLICY.get('raw_base', 'https://raw.githubusercontent.com/nanguoyu/Profiles/main/')
 
 
 def atomic(path, data):
@@ -126,13 +129,14 @@ def discover(ref, client, category):
     return client, category, resources
 
 
-def refresh(ref=None):
+def refresh(ref=None, ai_ref=None):
     if ref is None:
         data = json.loads(get(f'https://api.github.com/repos/{REPO}/commits/master'))
         ref = data['sha']
     if not re.fullmatch('[a-f0-9]{40}', ref):
         raise ValueError('Use a full immutable commit SHA')
-    ai_ref = json.loads(get(f'https://api.github.com/repos/{AI_REPO}/commits/main'))['sha']
+    if ai_ref is None:
+        ai_ref = json.loads(get(f'https://api.github.com/repos/{AI_REPO}/commits/main'))['sha']
     if not re.fullmatch('[a-f0-9]{40}', ai_ref):
         raise ValueError(f'Use a full immutable commit SHA for {AI_REPO}')
     result = {'schema': 1, 'repository': REPO, 'commit': ref, 'clients': {c: {} for c in CLIENTS}}
@@ -266,23 +270,61 @@ def category_resources(lock, client, name):
     return section['clients'][client][category], section['commit']
 
 
+def snapshot_path(client, provider, kind):
+    extension = '.yaml' if client == 'Clash' else '.list'
+    return SNAPSHOT / client / (provider + extension)
+
+
+def snapshot_payload(lock, client, provider, resource):
+    """Filtered entries of one AI supplement, read from the verified cache."""
+    data = (AI_CACHE / lock['ai']['commit'] / resource['key']).read_bytes()
+    return entries(data, resource['kind'], client, provider)
+
+
+def snapshot_bytes(lock, client, provider, resource):
+    payload = snapshot_payload(lock, client, provider, resource)
+    header = (f'# Snapshot of {AI_REPO} at {lock["ai"]["commit"]}\n'
+              f'# Filtered locally by keyword_denylist in config/policy.json; do not edit by hand.\n'
+              f'# Regenerate with: tools/profiles.py refresh (or build)\n')
+    if client == 'Clash':
+        return header + yaml.safe_dump({'payload': payload}, allow_unicode=True, sort_keys=False)
+    return header + '\n'.join(payload) + '\n'
+
+
+def snapshot_ai(lock):
+    for client in CLIENTS:
+        for provider, parts in lock['ai']['clients'][client].items():
+            for resource in parts:
+                atomic(snapshot_path(client, provider, resource['kind']),
+                       snapshot_bytes(lock, client, provider, resource))
+
+
+def snapshot_url(lock, client, name, resource):
+    """AI supplements are served from this repository; other sources stay pinned upstream."""
+    if not name.startswith(AI_PREFIX):
+        return resource['url']
+    provider = name[len(AI_PREFIX):]
+    return RAW_BASE + 'AISources/' + client + '/' + snapshot_path(client, provider, resource['kind']).name
+
+
 def rendered_rules(scene, client, lock):
     rules, providers = [], {}
     for kind, expression, target in logical_rules(scene, client):
         if kind == 'literal':
             rules.append(attach(expression, target, client))
             continue
-        for section, commit in [category_resources(lock, client, expression)]:
-            for resource in section:
-                if client == 'Clash':
-                    # Provider names and cache paths stay free of the AI: namespace used for lookups.
-                    name = expression.removeprefix(AI_PREFIX) + '-' + resource['kind']
-                    providers[name] = {'type': 'http', 'behavior': resource['kind'], 'format': 'yaml',
-                                       'url': resource['url'], 'path': './rules/' + name + '-' + commit[:12] + '.yaml', 'interval': 86400}
-                    rules.append(f'RULE-SET,{name},{target}' + (',no-resolve' if resource['kind'] == 'classical' else ''))
-                else:
-                    prefix = 'DOMAIN-SET' if resource['kind'] == 'domain' else 'RULE-SET'
-                    rules.append(f'{prefix},{resource["url"]},{target}' + (',no-resolve' if prefix == 'RULE-SET' else ''))
+        section, commit = category_resources(lock, client, expression)
+        for resource in section:
+            url = snapshot_url(lock, client, expression, resource)
+            if client == 'Clash':
+                # Provider names and cache paths stay free of the AI: namespace used for lookups.
+                name = expression.removeprefix(AI_PREFIX) + '-' + resource['kind']
+                providers[name] = {'type': 'http', 'behavior': resource['kind'], 'format': 'yaml',
+                                   'url': url, 'path': './rules/' + name + '-' + commit[:12] + '.yaml', 'interval': 86400}
+                rules.append(f'RULE-SET,{name},{target}' + (',no-resolve' if resource['kind'] == 'classical' else ''))
+            else:
+                prefix = 'DOMAIN-SET' if resource['kind'] == 'domain' else 'RULE-SET'
+                rules.append(f'{prefix},{url},{target}' + (',no-resolve' if prefix == 'RULE-SET' else ''))
     return rules, providers
 
 
@@ -356,6 +398,7 @@ def generate_blocklists():
 
 def generate():
     lock = load_lock()
+    snapshot_ai(lock)
     for scene in POLICY['scenes']:
         for client in CLIENTS:
             if client == 'Clash':
@@ -373,9 +416,10 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('command', choices=['refresh', 'fetch', 'build'])
     parser.add_argument('--ref', help='Full immutable upstream commit SHA; otherwise refresh resolves master')
+    parser.add_argument('--ai-ref', help='Full immutable AI supplement commit SHA; otherwise refresh resolves main')
     args = parser.parse_args()
     if args.command == 'refresh':
-        refresh(args.ref)
+        refresh(args.ref, args.ai_ref)
     elif args.command == 'fetch':
         hydrate(load_lock(), network=True)
     else:

@@ -16,6 +16,8 @@ Surge、Mihomo 系 Clash（包括 Clash.MD/Hako）与 Shadowrocket 的公共规�
 
 AI 服务另有补充来源 [VPSDance/ai-proxy-rules](https://github.com/VPSDance/ai-proxy-rules) 的 anthropic、openai、google-ai、copilot 四类：上游 OpenAI 与 Claude 列表停在 2025-06-06，Claude 仅 3 条，缺少 `claude.com`、`claudeusercontent.com`、MCP 域名、`sora.com`、`chat.com`、Gemini 与 Copilot；补充规则在过滤之后分类，出国指向 `AI`（Copilot 为独立 `Copilot` 组），回国明确直连，仅过滤场景不引用。两处来源各自锁定提交，见 [sources.lock.json](config/sources.lock.json) 的 `commit` 与 `ai.commit`。
 
+这四类补充规则**不直接引用上游 URL**，而是由 `build` 生成到 [AISources](AISources) 内、模板引用仓库自身路径：上游的 `DOMAIN-KEYWORD,sift` 会连带命中无关的 `siftscience.com`，`config/policy.json` 的 `keyword_denylist` 在生成时去掉它，本仓库快照因此与上游存在这一处已知差异。上游若更新（锁定提交变化或原始哈希变化），`refresh` 会重新生成快照；`validate.py` 会同时校验"原始文件里关键词仍存在"和"生效规则里已不存在"。
+
 源版本锁定在 [sources.lock.json](config/sources.lock.json)，记录完整提交 SHA、每个文件的 SHA-256、条数和源文件更新时间。AdvertisingLite、Privacy、China、Apple 的 domain 与 classical 文件分别引用，避免漏掉上游拆分的域名列表。客户端刷新同一 URL 不会越过锁定版本；更新需运行下方 refresh 命令并发布新的模板。
 
 顺序为本地/私网直连、过滤例外、个人屏蔽、连通性放行、广告/劫持/Privacy 过滤、AI 分类、服务分类、地区判断、最终策略。出国场景另启用 Privacy；回国采用 ChinaMedia 和 GEOIP CN，并将常见海外服务优先直连，不把包含海外直连例外的整份 China 列表当作回国列表。`filter_exceptions` 仅在出国场景把 `featuregates.org`、`statsig.anthropic.com`、`sentry.io`、`segment.io` 精确放到全部 Guard 规则之前，其余过滤顺序不变，回国与仅过滤场景不生成例外；因此出现在 Privacy 里的其他供应商域名仍会被 Guard 拦截，这也是 Guard 默认 REJECT 提供临时 DIRECT 排查的原因。公共模板没有个人域名屏蔽或个人应用例外。

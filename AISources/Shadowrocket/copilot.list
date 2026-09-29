@@ -1,0 +1,38 @@
+# Snapshot of VPSDance/ai-proxy-rules at c6dc8d089b5195f4a7560d537e0c000471fa377f
+# Filtered locally by keyword_denylist in config/policy.json; do not edit by hand.
+# Regenerate with: tools/profiles.py refresh (or build)
+DOMAIN,location.microsoft.com
+DOMAIN,odc.officeapps.live.com
+DOMAIN-SUFFIX,copilot.microsoft.com
+DOMAIN-SUFFIX,githubcopilot.com
+DOMAIN,api.msn.com
+DOMAIN,api.statsig.com
+DOMAIN,assets.msn.com
+DOMAIN,browser-intake-datadoghq.com
+DOMAIN,copilot-proxy.githubusercontent.com
+DOMAIN,copilot-workspace.githubnext.com
+DOMAIN,copilotprodattachments.blob.core.windows.net
+DOMAIN,gateway.bingviz.microsoft.net
+DOMAIN,gateway.bingviz.microsoftapp.net
+DOMAIN,in.appcenter.ms
+DOMAIN,self.events.data.microsoft.com
+DOMAIN,static.cloudflareinsights.com
+DOMAIN,sydney.bing.com
+DOMAIN-SUFFIX,algolia.net
+DOMAIN-SUFFIX,api.microsoftapp.net
+DOMAIN-SUFFIX,auth0.com
+DOMAIN-SUFFIX,bing-shopping.microsoft-falcon.io
+DOMAIN-SUFFIX,challenges.cloudflare.com
+DOMAIN-SUFFIX,client-api.arkoselabs.com
+DOMAIN-SUFFIX,edgeservices.bing.com
+DOMAIN-SUFFIX,events.statsigapi.net
+DOMAIN-SUFFIX,featuregates.org
+DOMAIN-SUFFIX,identrust.com
+DOMAIN-SUFFIX,intercom.io
+DOMAIN-SUFFIX,intercomcdn.com
+DOMAIN-SUFFIX,launchdarkly.com
+DOMAIN-SUFFIX,observeit.net
+DOMAIN-SUFFIX,segment.io
+DOMAIN-SUFFIX,sentry.io
+DOMAIN-SUFFIX,stripe.com
+IP-ASN,14061,no-resolve

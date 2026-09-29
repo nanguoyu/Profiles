@@ -59,28 +59,28 @@ rule-providers:
     type: http
     behavior: classical
     format: yaml
-    url: https://raw.githubusercontent.com/VPSDance/ai-proxy-rules/c6dc8d089b5195f4a7560d537e0c000471fa377f/rules/clash/anthropic.yaml
+    url: https://raw.githubusercontent.com/nanguoyu/Profiles/main/AISources/Clash/anthropic.yaml
     path: ./rules/anthropic-classical-c6dc8d089b51.yaml
     interval: 86400
   openai-classical:
     type: http
     behavior: classical
     format: yaml
-    url: https://raw.githubusercontent.com/VPSDance/ai-proxy-rules/c6dc8d089b5195f4a7560d537e0c000471fa377f/rules/clash/openai.yaml
+    url: https://raw.githubusercontent.com/nanguoyu/Profiles/main/AISources/Clash/openai.yaml
     path: ./rules/openai-classical-c6dc8d089b51.yaml
     interval: 86400
   google-ai-classical:
     type: http
     behavior: classical
     format: yaml
-    url: https://raw.githubusercontent.com/VPSDance/ai-proxy-rules/c6dc8d089b5195f4a7560d537e0c000471fa377f/rules/clash/google-ai.yaml
+    url: https://raw.githubusercontent.com/nanguoyu/Profiles/main/AISources/Clash/google-ai.yaml
     path: ./rules/google-ai-classical-c6dc8d089b51.yaml
     interval: 86400
   copilot-classical:
     type: http
     behavior: classical
     format: yaml
-    url: https://raw.githubusercontent.com/VPSDance/ai-proxy-rules/c6dc8d089b5195f4a7560d537e0c000471fa377f/rules/clash/copilot.yaml
+    url: https://raw.githubusercontent.com/nanguoyu/Profiles/main/AISources/Clash/copilot.yaml
     path: ./rules/copilot-classical-c6dc8d089b51.yaml
     interval: 86400
   ChinaMedia-classical:
