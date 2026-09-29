@@ -45,6 +45,15 @@
   "direct_exceptions": [
     "DOMAIN,captive.apple.com"
   ],
+  "filter_exceptions": {
+    "DOMAIN,featuregates.org": "AI",
+    "DOMAIN-SUFFIX,featuregates.org": "AI",
+    "DOMAIN,statsig.anthropic.com": "AI",
+    "DOMAIN,sentry.io": "AI",
+    "DOMAIN-SUFFIX,sentry.io": "AI",
+    "DOMAIN,segment.io": "AI",
+    "DOMAIN-SUFFIX,segment.io": "AI"
+  },
   "google_exceptions": [],
   "download_processes": []
 }

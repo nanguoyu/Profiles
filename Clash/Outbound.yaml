@@ -216,6 +216,13 @@ rules:
 - IP-CIDR6,::1/128,DIRECT,no-resolve
 - IP-CIDR6,fc00::/7,DIRECT,no-resolve
 - IP-CIDR6,fe80::/10,DIRECT,no-resolve
+- DOMAIN,featuregates.org,AI
+- DOMAIN-SUFFIX,featuregates.org,AI
+- DOMAIN,statsig.anthropic.com,AI
+- DOMAIN,sentry.io,AI
+- DOMAIN-SUFFIX,sentry.io,AI
+- DOMAIN,segment.io,AI
+- DOMAIN-SUFFIX,segment.io,AI
 - DOMAIN,captive.apple.com,DIRECT
 - RULE-SET,AdvertisingLite-domain,Guard
 - RULE-SET,AdvertisingLite-classical,Guard,no-resolve

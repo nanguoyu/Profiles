@@ -18,7 +18,7 @@ AI 服务另有补充来源 [VPSDance/ai-proxy-rules](https://github.com/VPSDanc
 
 源版本锁定在 [sources.lock.json](config/sources.lock.json)，记录完整提交 SHA、每个文件的 SHA-256、条数和源文件更新时间。AdvertisingLite、Privacy、China、Apple 的 domain 与 classical 文件分别引用，避免漏掉上游拆分的域名列表。客户端刷新同一 URL 不会越过锁定版本；更新需运行下方 refresh 命令并发布新的模板。
 
-顺序为本地/私网直连、通用连通性放行、广告/劫持过滤、AI 分类、服务分类、地区判断、最终策略。出国场景另启用 Privacy。回国采用 ChinaMedia 和 GEOIP CN，并将常见海外服务优先直连；不把包含海外直连例外的整份 China 列表当作回国列表。过滤规则始终先于分类，因此出现在 Privacy 里的供应商域名（如 `featuregates.org`）仍会被 Guard 拦截，这也是 Guard 默认 REJECT 提供临时 DIRECT 排查的原因。公共模板没有个人域名屏蔽或个人应用例外。
+顺序为本地/私网直连、过滤例外、个人屏蔽、连通性放行、广告/劫持/Privacy 过滤、AI 分类、服务分类、地区判断、最终策略。出国场景另启用 Privacy；回国采用 ChinaMedia 和 GEOIP CN，并将常见海外服务优先直连，不把包含海外直连例外的整份 China 列表当作回国列表。`filter_exceptions` 仅在出国场景把 `featuregates.org`、`statsig.anthropic.com`、`sentry.io`、`segment.io` 精确放到全部 Guard 规则之前，其余过滤顺序不变，回国与仅过滤场景不生成例外；因此出现在 Privacy 里的其他供应商域名仍会被 Guard 拦截，这也是 Guard 默认 REJECT 提供临时 DIRECT 排查的原因。公共模板没有个人域名屏蔽或个人应用例外。
 
 ## 更新与验证
 

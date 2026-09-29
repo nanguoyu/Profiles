@@ -200,6 +200,12 @@ def logical_rules(scene, client):
         literal('IP-CIDR,' + net + ',no-resolve', 'DIRECT')
     for net in ('::1/128', 'fc00::/7', 'fe80::/10'):
         literal('IP-CIDR6,' + net + ',no-resolve', 'DIRECT')
+    # A few AI vendor endpoints also appear in the pinned Privacy/Advertising lists and would be
+    # rejected by Guard before service classification. Emitting these exact expressions before
+    # every Guard rule is the only bypass; 回国 and 仅过滤 keep the pinned filtering untouched.
+    if scene == '科学上网':
+        for expression, filter_policy in POLICY['filter_exceptions'].items():
+            literal(expression, filter_policy)
     for expression in p['blocks']:
         literal(expression, 'REJECT')
     for expression in p['proxy_overrides']:
@@ -217,10 +223,9 @@ def logical_rules(scene, client):
         for process in POLICY['download_processes']:
             literal('PROCESS-NAME,' + process, 'DIRECT')
     if scene != '只过滤不代理':
-        # Supplemental AI rules are classified after filtering, so a vendor entry in a Guard list
-        # (e.g. featuregates.org) still needs reviewing whenever the pinned AI sources move.
-        # 科学上网 sends them to their own selectable group; 回国 keeps them explicitly direct,
-        # matching the pinned OpenAI/Claude behaviour. The AI: name keeps the lock lookup apart.
+        # Supplemental AI rules refine the classification of the pinned OpenAI/Claude lists.
+        # 科学上网 sends them to their own selectable group; 回国 keeps them explicitly direct.
+        # The AI: name keeps the lock lookup apart from the blackmatrix7 categories.
         for name, group in POLICY['ai_sources'].items():
             resource(AI_PREFIX + name, group if scene == '科学上网' else 'DIRECT')
     if scene == '科学上网':

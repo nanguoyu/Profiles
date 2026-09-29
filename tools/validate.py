@@ -139,6 +139,11 @@ def main():
                 f'{client}: missing split domain source')
     total_resources = sum(1 for _ in profiles.resources(lock))
     roots = [profiles.ROOT]
+    # Domains the pinned filters must keep rejecting. Guards a regression where a filter or
+    # exception edit silently drops the Guard rules instead of reordering them.
+    guard_cases = {
+        '科学上网': [('doubleclick.net', 'Guard'), ('googleads.g.doubleclick.net', 'Guard'), ('analytics.algolia.com', 'Guard')],
+    }
     cases = {
         '科学上网': [('chatgpt.com', 'AI'), ('api.openai.com', 'AI'), ('claude.ai', 'AI'), ('github.com', 'Proxies'), ('www.google.com', 'Proxies'), ('www.bilibili.com', 'Bilibili'), ('captive.apple.com', 'DIRECT'), ('example.invalid', 'Proxies'),
                      # Supplemental AI sources: domains the pinned blackmatrix7 lists do not cover.
@@ -170,11 +175,30 @@ def main():
                     require(any(source in r for r in rules), f'{client}/{scene}: {source} not wired')
                     if scene == '科学上网':
                         require(group in groups, f'{client}/{scene}: {group} group undefined')
+                # Filter exceptions must beat the Guard lists they conflict with, and must not
+                # leak into scenes that deliberately keep the pinned filtering order.
+                for expression, filter_policy in profiles.POLICY['filter_exceptions'].items():
+                    domain = expression.split(',', 1)[1]
+                    present = any(r.startswith(expression + ',') for r in rules)
+                    if scene != '科学上网':
+                        require(not present, f'{client}/{scene}: filter exception present outside 科学上网')
+                        continue
+                    require(present, f'{client}/{scene}: filter exception {expression} missing')
+                    first = next(i for i, r in enumerate(rules) if r.startswith(expression + ','))
+                    guard = next((i for i, r in enumerate(rules) if target(r) == 'Guard'), len(rules))
+                    require(first < guard, f'{client}/{scene}: {expression} is emitted after the Guard filters')
+                    require(routing(rules, client, resources[client], domain=domain) == filter_policy,
+                            f'{client}/{scene}: {domain} still intercepted before its exception')
+                    checks += 1
                 if scene == '回国':
                     require(groups['回国代理'][0] == 'DIRECT', 'Unconfirmed return node selected automatically')
                 for domain, expected in cases[scene]:
                     actual = routing(rules, client, resources[client], domain=domain)
                     require(actual == expected, f'{client}/{scene}: {domain} routed to {actual}, expected {expected}')
+                    checks += 1
+                for domain, expected in guard_cases.get(scene, []):
+                    actual = routing(rules, client, resources[client], domain=domain)
+                    require(actual == expected, f'{client}/{scene}: {domain} routed to {actual}, expected {expected} (Guard filter lost)')
                     checks += 1
                 for ip in ('100.100.100.100', '192.168.10.2', 'fd7a:115c:a1e0::1'):
                     require(routing(rules, client, resources[client], ip=ip) == 'DIRECT', 'Private network incorrectly proxied')
