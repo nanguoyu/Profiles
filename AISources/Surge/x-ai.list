@@ -1,0 +1,7 @@
+# Snapshot of VPSDance/ai-proxy-rules at c6dc8d089b5195f4a7560d537e0c000471fa377f
+# Filtered locally by keyword_denylist in config/policy.json; do not edit by hand.
+# Regenerate with: tools/profiles.py refresh (or build)
+DOMAIN-SUFFIX,grok.com
+DOMAIN-SUFFIX,grok.x.com
+DOMAIN-SUFFIX,grokipedia.com
+DOMAIN-SUFFIX,x.ai

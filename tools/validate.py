@@ -176,11 +176,13 @@ def main():
     cases = {
         '科学上网': [('chatgpt.com', 'AI'), ('api.openai.com', 'AI'), ('claude.ai', 'AI'), ('github.com', 'Proxies'), ('www.google.com', 'Proxies'), ('www.bilibili.com', 'Bilibili'), ('captive.apple.com', 'DIRECT'), ('example.invalid', 'Proxies'),
                      # Supplemental AI sources: domains the pinned blackmatrix7 lists do not cover.
-                     ('sora.com', 'AI'), ('chat.com', 'AI'), ('claude.com', 'AI'), ('claudeusercontent.com', 'AI'), ('platform.claude.com', 'AI'), ('mcp-proxy.anthropic.com', 'AI'), ('gemini.google.com', 'AI'), ('notebooklm.google.com', 'AI'), ('copilot.microsoft.com', 'Copilot')],
+                     ('sora.com', 'AI'), ('chat.com', 'AI'), ('claude.com', 'AI'), ('claudeusercontent.com', 'AI'), ('platform.claude.com', 'AI'), ('mcp-proxy.anthropic.com', 'AI'), ('gemini.google.com', 'AI'), ('notebooklm.google.com', 'AI'), ('copilot.microsoft.com', 'Copilot'),
+                     ('x.ai', 'AI'), ('grok.com', 'AI'), ('grokipedia.com', 'AI'), ('perplexity.ai', 'AI'), ('perplexity.com', 'AI'), ('pplx.ai', 'AI'), ('x.com', 'Proxies')],
         '回国': [('www.bilibili.com', '回国代理'), ('www.google.com', 'DIRECT'), ('paypal.com', 'DIRECT'), ('chatgpt.com', 'DIRECT'), ('example.invalid', 'DIRECT'),
-                 ('claude.com', 'DIRECT'), ('claudeusercontent.com', 'DIRECT'), ('sora.com', 'DIRECT'), ('gemini.google.com', 'DIRECT'), ('copilot.microsoft.com', 'DIRECT')],
+                 ('claude.com', 'DIRECT'), ('claudeusercontent.com', 'DIRECT'), ('sora.com', 'DIRECT'), ('gemini.google.com', 'DIRECT'), ('copilot.microsoft.com', 'DIRECT'),
+                 ('x.ai', 'DIRECT'), ('grok.com', 'DIRECT'), ('perplexity.ai', 'DIRECT')],
         '只过滤不代理': [('www.google.com', 'DIRECT'), ('github.com', 'DIRECT'), ('example.invalid', 'DIRECT'),
-                         ('claude.com', 'DIRECT'), ('sora.com', 'DIRECT')],
+                         ('claude.com', 'DIRECT'), ('sora.com', 'DIRECT'), ('grok.com', 'DIRECT'), ('perplexity.ai', 'DIRECT')],
     }
     count = checks = native = 0
     for root in roots:

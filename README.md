@@ -14,7 +14,7 @@ Surge、Mihomo 系 Clash（包括 Clash.MD/Hako）与 Shadowrocket 的公共规�
 
 使用 [blackmatrix7/ios_rule_script](https://github.com/blackmatrix7/ios_rule_script) 的客户端专用资源：AdvertisingLite、Hijacking、Privacy、China、Apple、OpenAI、Claude、Google、GitHub、Telegram、Netflix、YouTube、BiliBili、ChinaMedia。
 
-AI 服务另有补充来源 [VPSDance/ai-proxy-rules](https://github.com/VPSDance/ai-proxy-rules) 的 anthropic、openai、google-ai、copilot 四类：上游 OpenAI 与 Claude 列表停在 2025-06-06，Claude 仅 3 条，缺少 `claude.com`、`claudeusercontent.com`、MCP 域名、`sora.com`、`chat.com`、Gemini 与 Copilot；补充规则在过滤之后分类，出国指向 `AI`（Copilot 为独立 `Copilot` 组），回国明确直连，仅过滤场景不引用。两处来源各自锁定提交，见 [sources.lock.json](config/sources.lock.json) 的 `commit` 与 `ai.commit`。
+AI 服务另有补充来源 [VPSDance/ai-proxy-rules](https://github.com/VPSDance/ai-proxy-rules) 的 anthropic、openai、google-ai、x-ai、perplexity、copilot 六类：上游 OpenAI 与 Claude 列表停在 2025-06-06，Claude 仅 3 条，缺少 `claude.com`、`claudeusercontent.com`、MCP 域名、`sora.com`、`chat.com`、Gemini、Grok 与 Perplexity；补充规则在过滤之后分类，出国指向 `AI`（Copilot 为独立 `Copilot` 组），回国明确直连，仅过滤场景不引用。其中 x-ai（4 条）与 perplexity（5 条）只覆盖主要域名，Grok 的其他子域仍归 `Proxies`。两处来源各自锁定提交，见 [sources.lock.json](config/sources.lock.json) 的 `commit` 与 `ai.commit`。
 
 这四类补充规则**不直接引用上游 URL**，而是由 `build` 生成到 [AISources](AISources) 内、模板引用仓库自身路径：上游的 `DOMAIN-KEYWORD,sift` 会连带命中无关的 `siftscience.com`，`config/policy.json` 的 `keyword_denylist` 在生成时去掉它，本仓库快照因此与上游存在这一处已知差异。上游若更新（锁定提交变化或原始哈希变化），`refresh` 会重新生成快照；`validate.py` 会同时校验"原始文件里关键词仍存在"和"生效规则里已不存在"。
 

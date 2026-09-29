@@ -76,6 +76,20 @@ rule-providers:
     url: https://raw.githubusercontent.com/nanguoyu/Profiles/main/AISources/Clash/google-ai.yaml
     path: ./rules/google-ai-classical-c6dc8d089b51.yaml
     interval: 86400
+  x-ai-classical:
+    type: http
+    behavior: classical
+    format: yaml
+    url: https://raw.githubusercontent.com/nanguoyu/Profiles/main/AISources/Clash/x-ai.yaml
+    path: ./rules/x-ai-classical-c6dc8d089b51.yaml
+    interval: 86400
+  perplexity-classical:
+    type: http
+    behavior: classical
+    format: yaml
+    url: https://raw.githubusercontent.com/nanguoyu/Profiles/main/AISources/Clash/perplexity.yaml
+    path: ./rules/perplexity-classical-c6dc8d089b51.yaml
+    interval: 86400
   copilot-classical:
     type: http
     behavior: classical
@@ -172,6 +186,8 @@ rules:
 - RULE-SET,anthropic-classical,DIRECT,no-resolve
 - RULE-SET,openai-classical,DIRECT,no-resolve
 - RULE-SET,google-ai-classical,DIRECT,no-resolve
+- RULE-SET,x-ai-classical,DIRECT,no-resolve
+- RULE-SET,perplexity-classical,DIRECT,no-resolve
 - RULE-SET,copilot-classical,DIRECT,no-resolve
 - RULE-SET,ChinaMedia-classical,回国代理,no-resolve
 - RULE-SET,Apple-domain,DIRECT

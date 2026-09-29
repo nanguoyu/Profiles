@@ -40,6 +40,8 @@
     "anthropic": "AI",
     "openai": "AI",
     "google-ai": "AI",
+    "x-ai": "AI",
+    "perplexity": "AI",
     "copilot": "Copilot"
   },
   "keyword_denylist": {

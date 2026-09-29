@@ -45,6 +45,28 @@
             "source_updated": null,
             "url": "https://raw.githubusercontent.com/VPSDance/ai-proxy-rules/c6dc8d089b5195f4a7560d537e0c000471fa377f/rules/clash/openai.yaml"
           }
+        ],
+        "perplexity": [
+          {
+            "bytes": 291,
+            "entries": 5,
+            "key": "Clash-AI-perplexity",
+            "kind": "classical",
+            "sha256": "54b18e9cde86b7727910929b08219b688c6e8fa115d69034a24ddc2c1f68b9b0",
+            "source_updated": null,
+            "url": "https://raw.githubusercontent.com/VPSDance/ai-proxy-rules/c6dc8d089b5195f4a7560d537e0c000471fa377f/rules/clash/perplexity.yaml"
+          }
+        ],
+        "x-ai": [
+          {
+            "bytes": 215,
+            "entries": 4,
+            "key": "Clash-AI-x-ai",
+            "kind": "classical",
+            "sha256": "23c51feb5acfa447613c31397a6c419c3e5a26c7cd1d3b087ea23c7fd116eb9f",
+            "source_updated": null,
+            "url": "https://raw.githubusercontent.com/VPSDance/ai-proxy-rules/c6dc8d089b5195f4a7560d537e0c000471fa377f/rules/clash/x-ai.yaml"
+          }
         ]
       },
       "Shadowrocket": {
@@ -91,6 +113,28 @@
             "source_updated": null,
             "url": "https://raw.githubusercontent.com/VPSDance/ai-proxy-rules/c6dc8d089b5195f4a7560d537e0c000471fa377f/rules/shadowrocket/openai.list"
           }
+        ],
+        "perplexity": [
+          {
+            "bytes": 260,
+            "entries": 5,
+            "key": "Shadowrocket-AI-perplexity",
+            "kind": "classical",
+            "sha256": "df9656ab77ff8965c40eed1062f75ea87d91f7b53a6b70b7cb2f8728c98ab615",
+            "source_updated": null,
+            "url": "https://raw.githubusercontent.com/VPSDance/ai-proxy-rules/c6dc8d089b5195f4a7560d537e0c000471fa377f/rules/shadowrocket/perplexity.list"
+          }
+        ],
+        "x-ai": [
+          {
+            "bytes": 188,
+            "entries": 4,
+            "key": "Shadowrocket-AI-x-ai",
+            "kind": "classical",
+            "sha256": "89e99e14b614bf4c50a81f4946221e56614fc0eec8e912f5d713de0988fc8428",
+            "source_updated": null,
+            "url": "https://raw.githubusercontent.com/VPSDance/ai-proxy-rules/c6dc8d089b5195f4a7560d537e0c000471fa377f/rules/shadowrocket/x-ai.list"
+          }
         ]
       },
       "Surge": {
@@ -136,6 +180,28 @@
             "sha256": "672b00de6e394dd6f5827589c62a6e742682bc68730c2b645cd773b39bd99ba0",
             "source_updated": null,
             "url": "https://raw.githubusercontent.com/VPSDance/ai-proxy-rules/c6dc8d089b5195f4a7560d537e0c000471fa377f/rules/surge/openai.list"
+          }
+        ],
+        "perplexity": [
+          {
+            "bytes": 260,
+            "entries": 5,
+            "key": "Surge-AI-perplexity",
+            "kind": "classical",
+            "sha256": "df9656ab77ff8965c40eed1062f75ea87d91f7b53a6b70b7cb2f8728c98ab615",
+            "source_updated": null,
+            "url": "https://raw.githubusercontent.com/VPSDance/ai-proxy-rules/c6dc8d089b5195f4a7560d537e0c000471fa377f/rules/surge/perplexity.list"
+          }
+        ],
+        "x-ai": [
+          {
+            "bytes": 188,
+            "entries": 4,
+            "key": "Surge-AI-x-ai",
+            "kind": "classical",
+            "sha256": "89e99e14b614bf4c50a81f4946221e56614fc0eec8e912f5d713de0988fc8428",
+            "source_updated": null,
+            "url": "https://raw.githubusercontent.com/VPSDance/ai-proxy-rules/c6dc8d089b5195f4a7560d537e0c000471fa377f/rules/surge/x-ai.list"
           }
         ]
       }

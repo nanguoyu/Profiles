@@ -1,6 +1,6 @@
 # AISources — 生成产物，请勿手动编辑
 
-这里保存 [VPSDance/ai-proxy-rules](https://github.com/VPSDance/ai-proxy-rules) 的 anthropic、openai、google-ai、copilot 四类规则在本仓库的**快照**，按 Surge / Clash / Shadowrocket 三端各一份，共 12 个文件。
+这里保存 [VPSDance/ai-proxy-rules](https://github.com/VPSDance/ai-proxy-rules) 的 anthropic、openai、google-ai、x-ai、perplexity、copilot 六类规则在本仓库的**快照**，按 Surge / Clash / Shadowrocket 三端各一份，共 18 个文件。
 
 上传到公网的原因：客户端的规则引擎只能下载整份远程列表，无法只排除其中某一条规则。上游 anthropic 列表里的 `DOMAIN-KEYWORD,sift` 会连带命中无关的 `siftscience.com`，因此必须在本仓库提供一份剔除了该关键词的列表，模板引用本仓库路径后修复才会真正生效。
 
