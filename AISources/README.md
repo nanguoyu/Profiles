@@ -1,6 +1,6 @@
 # AISources — 生成产物，请勿手动编辑
 
-这里保存 AI 补充规则在本仓库的**快照**，按 Surge / Clash / Shadowrocket 三端各一份。六类来自 [VPSDance/ai-proxy-rules](https://github.com/VPSDance/ai-proxy-rules) 的 anthropic、openai、google-ai、x-ai、perplexity、copilot；另有 `ai-extra`（三端各一份，共 21 个文件）完全来自本仓库 `config/policy.json` 的 `ai_extra`。
+这里保存 AI 补充规则在本仓库的**快照**，按 Surge / Clash / Shadowrocket 三端各一份。六类来自 [VPSDance/ai-proxy-rules](https://github.com/VPSDance/ai-proxy-rules) 的 anthropic、openai、google-ai、x-ai、perplexity、copilot；另有 `ai-extra`（三端各一份，共 21 个文件、53 条，完全来自本仓库 `config/policy.json` 的 `ai_extra`），覆盖 Grok 子域、Cursor、Codeium/Windsurf、Groq、Mistral、Cohere、HuggingFace、Midjourney、Suno、ElevenLabs、Character.AI、Poe、You.com、Replicate、Together、OpenRouter、Stability、Runway、`v0.dev`、`openai.azure.com` 等上游未列出的服务。
 
 上传到公网的原因：客户端的规则引擎只能下载整份远程列表，无法只排除其中某一条规则。上游 anthropic 列表里的 `DOMAIN-KEYWORD,sift` 会连带命中无关的 `siftscience.com`，因此必须在本仓库提供一份剔除了该关键词的列表，模板引用本仓库路径后修复才会真正生效。
 

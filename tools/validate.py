@@ -199,12 +199,15 @@ def main():
         '科学上网': [('chatgpt.com', 'AI'), ('api.openai.com', 'AI'), ('claude.ai', 'AI'), ('github.com', 'Proxies'), ('www.google.com', 'Proxies'), ('www.bilibili.com', 'Bilibili'), ('captive.apple.com', 'DIRECT'), ('example.invalid', 'Proxies'),
                      # Supplemental AI sources: domains the pinned blackmatrix7 lists do not cover.
                      ('sora.com', 'AI'), ('chat.com', 'AI'), ('claude.com', 'AI'), ('claudeusercontent.com', 'AI'), ('platform.claude.com', 'AI'), ('mcp-proxy.anthropic.com', 'AI'), ('gemini.google.com', 'AI'), ('notebooklm.google.com', 'AI'), ('copilot.microsoft.com', 'Copilot'),
-                     ('x.ai', 'AI'), ('grok.com', 'AI'), ('grokipedia.com', 'AI'), ('grokusercontent.com', 'AI'), ('groksupport.com', 'AI'), ('perplexity.ai', 'AI'), ('perplexity.com', 'AI'), ('pplx.ai', 'AI'), ('x.com', 'Proxies')],
+                     ('x.ai', 'AI'), ('grok.com', 'AI'), ('grokipedia.com', 'AI'), ('grokusercontent.com', 'AI'), ('groksupport.com', 'AI'), ('perplexity.ai', 'AI'), ('perplexity.com', 'AI'), ('pplx.ai', 'AI'), ('x.com', 'Proxies'),
+                     # Curated ai_extra services that no pinned source covers.
+                     ('cursor.com', 'AI'), ('codeium.com', 'AI'), ('windsurf.ai', 'AI'), ('groq.com', 'AI'), ('mistral.ai', 'AI'), ('cohere.com', 'AI'), ('huggingface.co', 'AI'), ('midjourney.com', 'AI'), ('suno.ai', 'AI'), ('elevenlabs.io', 'AI'), ('character.ai', 'AI'), ('you.com', 'AI'), ('openai.azure.com', 'AI'), ('makersuite.google.com', 'AI')],
         '回国': [('www.bilibili.com', '回国代理'), ('www.google.com', 'DIRECT'), ('paypal.com', 'DIRECT'), ('chatgpt.com', 'DIRECT'), ('example.invalid', 'DIRECT'),
                  ('claude.com', 'DIRECT'), ('claudeusercontent.com', 'DIRECT'), ('sora.com', 'DIRECT'), ('gemini.google.com', 'DIRECT'), ('copilot.microsoft.com', 'DIRECT'),
-                 ('x.ai', 'DIRECT'), ('grok.com', 'DIRECT'), ('grokusercontent.com', 'DIRECT'), ('perplexity.ai', 'DIRECT')],
+                 ('x.ai', 'DIRECT'), ('grok.com', 'DIRECT'), ('grokusercontent.com', 'DIRECT'), ('perplexity.ai', 'DIRECT'),
+                 ('cursor.com', 'DIRECT'), ('groq.com', 'DIRECT'), ('huggingface.co', 'DIRECT')],
         '只过滤不代理': [('www.google.com', 'DIRECT'), ('github.com', 'DIRECT'), ('example.invalid', 'DIRECT'),
-                         ('claude.com', 'DIRECT'), ('sora.com', 'DIRECT'), ('grok.com', 'DIRECT'), ('perplexity.ai', 'DIRECT')],
+                         ('claude.com', 'DIRECT'), ('sora.com', 'DIRECT'), ('grok.com', 'DIRECT'), ('perplexity.ai', 'DIRECT'), ('cursor.com', 'DIRECT')],
     }
     count = checks = native = 0
     for root in roots:
