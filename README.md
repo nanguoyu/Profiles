@@ -52,9 +52,9 @@ Surge 原有 `Surge/Outbound.conf` 与 `Surge/Inbound.conf` 入口已更新为�
 
 参见 [本次更新记录](docs/UPDATE-2026-09-06.md) 与 [上游刷新与 AI 规则补充](docs/UPDATE-2026-09-29.md)。
 
-## 来源与许可
+## 来源
 
-引用的规则数据来自 blackmatrix7/ios_rule_script，按其 GPL-2.0 许可使用；AI 补充规则来自 VPSDance/ai-proxy-rules（MIT）。下载缓存不纳入仓库。历史规则及作者致谢保留在历史 README。Shadowrocket 格式参考 [LOWERTOP/Shadowrocket](https://github.com/LOWERTOP/Shadowrocket) 的维护者示例。
+规则数据来自 [blackmatrix7/ios_rule_script](https://github.com/blackmatrix7/ios_rule_script) 与 [VPSDance/ai-proxy-rules](https://github.com/VPSDance/ai-proxy-rules)，以远程 URL 方式引用，不纳入本仓库；下载缓存同样不纳入仓库。历史规则及作者致谢保留在历史 README。Shadowrocket 格式参考 [LOWERTOP/Shadowrocket](https://github.com/LOWERTOP/Shadowrocket) 的维护者示例。
 
 ## 可选个人屏蔽列表
 
