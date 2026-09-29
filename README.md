@@ -14,7 +14,7 @@ Surge、Mihomo 系 Clash（包括 Clash.MD/Hako）与 Shadowrocket 的公共规�
 
 使用 [blackmatrix7/ios_rule_script](https://github.com/blackmatrix7/ios_rule_script) 的客户端专用资源：AdvertisingLite、Hijacking、Privacy、China、Apple、OpenAI、Claude、Google、GitHub、Telegram、Netflix、YouTube、BiliBili、ChinaMedia。
 
-AI 服务另有补充来源 [VPSDance/ai-proxy-rules](https://github.com/VPSDance/ai-proxy-rules)（MIT）的 anthropic、openai、google-ai、copilot 四类：上游 OpenAI 与 Claude 列表停在 2025-06-06，Claude 仅 3 条，缺少 `claude.com`、`claudeusercontent.com`、MCP 域名、`sora.com`、`chat.com`、Gemini 与 Copilot；补充规则在过滤之后分类，出国指向 `AI`（Copilot 为独立 `Copilot` 组），回国明确直连，仅过滤场景不引用。两处来源各自锁定提交，见 [sources.lock.json](config/sources.lock.json) 的 `commit` 与 `ai.commit`。
+AI 服务另有补充来源 [VPSDance/ai-proxy-rules](https://github.com/VPSDance/ai-proxy-rules) 的 anthropic、openai、google-ai、copilot 四类：上游 OpenAI 与 Claude 列表停在 2025-06-06，Claude 仅 3 条，缺少 `claude.com`、`claudeusercontent.com`、MCP 域名、`sora.com`、`chat.com`、Gemini 与 Copilot；补充规则在过滤之后分类，出国指向 `AI`（Copilot 为独立 `Copilot` 组），回国明确直连，仅过滤场景不引用。两处来源各自锁定提交，见 [sources.lock.json](config/sources.lock.json) 的 `commit` 与 `ai.commit`。
 
 源版本锁定在 [sources.lock.json](config/sources.lock.json)，记录完整提交 SHA、每个文件的 SHA-256、条数和源文件更新时间。AdvertisingLite、Privacy、China、Apple 的 domain 与 classical 文件分别引用，避免漏掉上游拆分的域名列表。客户端刷新同一 URL 不会越过锁定版本；更新需运行下方 refresh 命令并发布新的模板。
 
