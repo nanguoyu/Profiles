@@ -7,6 +7,7 @@ import json
 import os
 from pathlib import Path
 import re
+import subprocess
 import tempfile
 import urllib.error
 import urllib.request
@@ -18,6 +19,8 @@ PROFILE_NAMES = {'科学上网': 'Outbound', '回国': 'Inbound', '只过滤不�
 REPO = 'blackmatrix7/ios_rule_script'
 AI_REPO = 'VPSDance/ai-proxy-rules'
 AI_PREFIX = 'AI:'
+# local supplement carrying the curated additions that no pinned source covers yet
+AI_EXTRA = 'ai-extra'
 CLIENTS = ('Surge', 'Clash', 'Shadowrocket')
 POLICY = json.loads((CONFIG / 'policy.json').read_text())
 LOCK = CONFIG / 'sources.lock.json'
@@ -58,6 +61,30 @@ def get(url, optional=False):
         raise
 
 
+ALLOWED_RULE_TYPES = {'DOMAIN', 'DOMAIN-SUFFIX', 'DOMAIN-KEYWORD', 'DOMAIN-WILDCARD', 'DOMAIN-REGEX',
+                      'IP-CIDR', 'IP-CIDR6', 'IP-ASN', 'USER-AGENT', 'PROCESS-NAME', 'PROCESS-PATH',
+                      'URL-REGEX', 'AND', 'OR', 'NOT', 'DST-PORT', 'DEST-PORT', 'NETWORK', 'PROTOCOL'}
+
+
+# Logical operators and regex rules legitimately carry commas inside their expression, so their
+# trailing operands cannot be read as a policy.
+COMPOUND_RULE_TYPES = {'AND', 'OR', 'NOT', 'URL-REGEX', 'DOMAIN-REGEX', 'DOMAIN-WILDCARD'}
+ALLOWED_OPERANDS = {'no-resolve'}
+
+
+def check_rule_syntax(result):
+    """Reject unexpected rule types and rules that smuggle in a policy of their own."""
+    for entry in result:
+        parts = [x.strip() for x in entry.split(',')]
+        if parts[0] not in ALLOWED_RULE_TYPES:
+            raise ValueError('Unexpected rule type or embedded policy in source')
+        if parts[0] in COMPOUND_RULE_TYPES:
+            continue
+        if any(x not in ALLOWED_OPERANDS for x in parts[2:]):
+            raise ValueError('Rule carries an embedded policy: ' + entry)
+    return result
+
+
 def entries(data, kind, client, category=None):
     text = data.decode('utf-8-sig')
     if client == 'Clash':
@@ -73,17 +100,15 @@ def entries(data, kind, client, category=None):
         if any(',' in x or '://' in x or '<' in x or ' ' in x for x in result):
             raise ValueError('Invalid domain payload')
     else:
-        allowed = {'DOMAIN', 'DOMAIN-SUFFIX', 'DOMAIN-KEYWORD', 'DOMAIN-WILDCARD', 'DOMAIN-REGEX', 'IP-CIDR', 'IP-CIDR6', 'IP-ASN', 'USER-AGENT', 'PROCESS-NAME', 'PROCESS-PATH', 'URL-REGEX', 'AND', 'OR', 'NOT', 'DST-PORT', 'DEST-PORT', 'NETWORK', 'PROTOCOL'}
-        if any(x.split(',')[0] not in allowed for x in result):
-            raise ValueError('Unexpected rule type or embedded policy in source')
-    # A declared keyword denylist drops entries that are broader than the source intended, e.g.
-    # sift also captures unrelated siftscience.com. Every caller filters through here so the
-    # lock entry count stays the count that actually reaches the generated profiles.
-    denied = {x.strip().lower() for x in POLICY.get('keyword_denylist', {}).get(category, [])}
+        check_rule_syntax(result)
+    # A declared denylist drops entries that are broader than the source intended, e.g. sift also
+    # captures unrelated siftscience.com. Every caller filters through here so the lock entry
+    # count stays the count that actually reaches the generated profiles.
+    denied = {x.strip().lower() for x in POLICY.get('source_denylist', {}).get(category, [])}
     if denied:
         result = [x for x in result if x.strip().lower() not in denied]
         if not result:
-            raise ValueError('Keyword denylist removed every entry of ' + str(category))
+            raise ValueError('Denylist removed every entry of ' + str(category))
     return result
 
 
@@ -129,14 +154,28 @@ def discover(ref, client, category):
     return client, category, resources
 
 
+def head(owner_repo, branch):
+    """Resolve a branch head without the 60-per-hour unauthenticated GitHub API quota."""
+    try:
+        out = subprocess.run(['git', 'ls-remote', f'https://github.com/{owner_repo}', f'refs/heads/{branch}'],
+                             capture_output=True, text=True, timeout=60)
+        if out.returncode == 0:
+            match = re.search(r'^([a-f0-9]{40})\s+refs/heads/' + re.escape(branch) + r'$', out.stdout, re.M)
+            if match:
+                return match.group(1)
+    except (OSError, subprocess.SubprocessError):
+        pass
+    # Fall back to the API when git is unavailable; it is rate limited but still correct.
+    return json.loads(get(f'https://api.github.com/repos/{owner_repo}/commits/{branch}'))['sha']
+
+
 def refresh(ref=None, ai_ref=None):
     if ref is None:
-        data = json.loads(get(f'https://api.github.com/repos/{REPO}/commits/master'))
-        ref = data['sha']
+        ref = head(REPO, 'master')
     if not re.fullmatch('[a-f0-9]{40}', ref):
         raise ValueError('Use a full immutable commit SHA')
     if ai_ref is None:
-        ai_ref = json.loads(get(f'https://api.github.com/repos/{AI_REPO}/commits/main'))['sha']
+        ai_ref = head(AI_REPO, 'main')
     if not re.fullmatch('[a-f0-9]{40}', ai_ref):
         raise ValueError(f'Use a full immutable commit SHA for {AI_REPO}')
     result = {'schema': 1, 'repository': REPO, 'commit': ref, 'clients': {c: {} for c in CLIENTS}}
@@ -240,6 +279,8 @@ def logical_rules(scene, client):
         # The AI: name keeps the lock lookup apart from the blackmatrix7 categories.
         for name, group in POLICY['ai_sources'].items():
             resource(AI_PREFIX + name, group if scene == '科学上网' else 'DIRECT')
+        if POLICY.get('ai_extra'):
+            resource(AI_PREFIX + AI_EXTRA, 'AI' if scene == '科学上网' else 'DIRECT')
     if scene == '科学上网':
         for name, target in [('OpenAI', 'AI'), ('Claude', 'AI'), ('Telegram', 'Proxies'), ('Netflix', 'Netflix'), ('YouTube', 'Proxies'), ('Google', 'Proxies'), ('GitHub', 'Proxies'), ('BiliBili', 'Bilibili'), ('Apple', 'Apple'), ('China', 'DIRECT')]:
             resource(name, target)
@@ -267,12 +308,20 @@ def category_resources(lock, client, name):
     """Supplemental AI sources live under lock['ai'] with their own pinned commit."""
     section = lock['ai'] if name.startswith(AI_PREFIX) else lock
     category = name[len(AI_PREFIX):] if name.startswith(AI_PREFIX) else name
+    if name == AI_PREFIX + AI_EXTRA:
+        # No upstream file to pin: the snapshot is generated from policy.json itself.
+        return [{'kind': 'classical', 'url': ''}], 'local'
     return section['clients'][client][category], section['commit']
 
 
 def snapshot_path(client, provider, kind):
     extension = '.yaml' if client == 'Clash' else '.list'
     return SNAPSHOT / client / (provider + extension)
+
+
+def extra_entries(client, kind='classical'):
+    """The curated local additions; no pinned source provides them yet."""
+    return check_rule_syntax([x.strip() for x in POLICY.get('ai_extra', [])])
 
 
 def snapshot_payload(lock, client, provider, resource):
@@ -297,6 +346,14 @@ def snapshot_ai(lock):
             for resource in parts:
                 atomic(snapshot_path(client, provider, resource['kind']),
                        snapshot_bytes(lock, client, provider, resource))
+        # The curated extra list has no upstream file; it is generated straight from policy.json.
+        payload = extra_entries(client)
+        if payload:
+            header = ('# Local additions curated in config/policy.json (ai_extra); no upstream source.\n'
+                      '# Regenerate with: tools/profiles.py build\n')
+            body = yaml.safe_dump({'payload': payload}, allow_unicode=True, sort_keys=False) if client == 'Clash' \
+                else '\n'.join(payload) + '\n'
+            atomic(snapshot_path(client, AI_EXTRA, 'classical'), header + body)
 
 
 def snapshot_url(lock, client, name, resource):
@@ -304,7 +361,7 @@ def snapshot_url(lock, client, name, resource):
     if not name.startswith(AI_PREFIX):
         return resource['url']
     provider = name[len(AI_PREFIX):]
-    return RAW_BASE + 'AISources/' + client + '/' + snapshot_path(client, provider, resource['kind']).name
+    return RAW_BASE + 'AISources/' + client + '/' + Path(snapshot_path(client, provider, resource['kind'])).name
 
 
 def rendered_rules(scene, client, lock):

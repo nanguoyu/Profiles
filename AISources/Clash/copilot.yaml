@@ -36,4 +36,3 @@ payload:
 - DOMAIN-SUFFIX,segment.io
 - DOMAIN-SUFFIX,sentry.io
 - DOMAIN-SUFFIX,stripe.com
-- IP-ASN,14061,no-resolve

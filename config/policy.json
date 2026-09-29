@@ -44,11 +44,20 @@
     "perplexity": "AI",
     "copilot": "Copilot"
   },
-  "keyword_denylist": {
+  "source_denylist": {
     "anthropic": [
       "DOMAIN-KEYWORD,sift"
+    ],
+    "copilot": [
+      "IP-ASN,14061,no-resolve"
     ]
   },
+  "ai_extra": [
+    "DOMAIN-SUFFIX,grok-sandbox.com",
+    "DOMAIN-SUFFIX,groksupport.com",
+    "DOMAIN-SUFFIX,groktpcontent.com",
+    "DOMAIN-SUFFIX,grokusercontent.com"
+  ],
   "raw_base": "https://raw.githubusercontent.com/nanguoyu/Profiles/main/",
   "direct_exceptions": [
     "DOMAIN,captive.apple.com"

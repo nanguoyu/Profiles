@@ -16,7 +16,7 @@
         "copilot": [
           {
             "bytes": 1409,
-            "entries": 35,
+            "entries": 34,
             "key": "Clash-AI-copilot",
             "kind": "classical",
             "sha256": "ee642fc0ad61e154d8fb234654a7b1b9f5831209b7badb3d4628d2c71e6edaf0",
@@ -84,7 +84,7 @@
         "copilot": [
           {
             "bytes": 1256,
-            "entries": 35,
+            "entries": 34,
             "key": "Shadowrocket-AI-copilot",
             "kind": "classical",
             "sha256": "b3d2d81768911dc9e7c6db743f25a27e1a5ee8dfdb5e8ae9fc6f1547f72edafd",
@@ -152,7 +152,7 @@
         "copilot": [
           {
             "bytes": 1256,
-            "entries": 35,
+            "entries": 34,
             "key": "Surge-AI-copilot",
             "kind": "classical",
             "sha256": "b3d2d81768911dc9e7c6db743f25a27e1a5ee8dfdb5e8ae9fc6f1547f72edafd",

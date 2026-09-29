@@ -97,6 +97,13 @@ rule-providers:
     url: https://raw.githubusercontent.com/nanguoyu/Profiles/main/AISources/Clash/copilot.yaml
     path: ./rules/copilot-classical-c6dc8d089b51.yaml
     interval: 86400
+  ai-extra-classical:
+    type: http
+    behavior: classical
+    format: yaml
+    url: https://raw.githubusercontent.com/nanguoyu/Profiles/main/AISources/Clash/ai-extra.yaml
+    path: ./rules/ai-extra-classical-local.yaml
+    interval: 86400
   ChinaMedia-classical:
     type: http
     behavior: classical
@@ -189,6 +196,7 @@ rules:
 - RULE-SET,x-ai-classical,DIRECT,no-resolve
 - RULE-SET,perplexity-classical,DIRECT,no-resolve
 - RULE-SET,copilot-classical,DIRECT,no-resolve
+- RULE-SET,ai-extra-classical,DIRECT,no-resolve
 - RULE-SET,ChinaMedia-classical,回国代理,no-resolve
 - RULE-SET,Apple-domain,DIRECT
 - RULE-SET,Apple-classical,DIRECT,no-resolve

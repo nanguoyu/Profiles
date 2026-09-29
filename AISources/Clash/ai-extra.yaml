@@ -1,0 +1,7 @@
+# Local additions curated in config/policy.json (ai_extra); no upstream source.
+# Regenerate with: tools/profiles.py build
+payload:
+- DOMAIN-SUFFIX,grok-sandbox.com
+- DOMAIN-SUFFIX,groksupport.com
+- DOMAIN-SUFFIX,groktpcontent.com
+- DOMAIN-SUFFIX,grokusercontent.com

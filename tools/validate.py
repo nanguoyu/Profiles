@@ -150,10 +150,18 @@ def main():
     for client in profiles.CLIENTS:
         require(resources[client].pop('_domain') == {'AdvertisingLite', 'Privacy', 'China', 'Apple'},
                 f'{client}: missing split domain source')
+    # The curated local source has no lock entry, so register its snapshot for routing checks.
+    if profiles.POLICY.get('ai_extra'):
+        for client in profiles.CLIENTS:
+            path = profiles.snapshot_path(client, profiles.AI_EXTRA, 'classical')
+            payload = profiles.entries(path.read_bytes(), 'classical', client)
+            name = profiles.AI_PREFIX + profiles.AI_EXTRA
+            key = provider_of(name) + '-classical' if client == 'Clash' else profiles.RAW_BASE + 'AISources/' + client + '/' + path.name
+            resources[client][key] = ('classical', payload)
     # A denylisted keyword must still exist in the raw upstream file (else policy.json is stale),
     # and must be absent from the effective payload that drives the generated profiles.
     suppressed = 0
-    for category, denied in profiles.POLICY.get('keyword_denylist', {}).items():
+    for category, denied in profiles.POLICY.get('source_denylist', {}).items():
         for cache, ref, client, name, r in profiles.resources(lock):
             if name != category:
                 continue
@@ -166,6 +174,20 @@ def main():
                 require(needle not in {x.strip().lower() for x in effective},
                         f'{client}/{category}: denylisted {expression} survived into the effective rules')
                 suppressed += 1
+    # The curated local additions have no upstream file: they must appear in the generated
+    # snapshot, and must not duplicate a pinned source that would silently shadow them.
+    if profiles.POLICY.get('ai_extra'):
+        pinned = {x.strip().lower() for _c, _r, client, cat, res in profiles.resources(lock)
+                  if cat in profiles.POLICY['ai_sources']
+                  for x in profiles.snapshot_payload(lock, client, cat, res)}
+        for client in profiles.CLIENTS:
+            snapshot = {x.strip().lower() for x in profiles.entries(
+                profiles.snapshot_path(client, profiles.AI_EXTRA, 'classical').read_bytes(), 'classical', client)}
+            for entry in profiles.extra_entries(client):
+                require(entry.strip().lower() in snapshot,
+                        f'{client}: curated {entry} missing from the {profiles.AI_EXTRA} snapshot')
+                require(entry.strip().lower() not in pinned,
+                        f'{client}: curated {entry} duplicates a pinned source')
     total_resources = sum(1 for _ in profiles.resources(lock))
     roots = [profiles.ROOT]
     # Domains the pinned filters must keep rejecting. Guards a regression where a filter or
@@ -177,10 +199,10 @@ def main():
         '科学上网': [('chatgpt.com', 'AI'), ('api.openai.com', 'AI'), ('claude.ai', 'AI'), ('github.com', 'Proxies'), ('www.google.com', 'Proxies'), ('www.bilibili.com', 'Bilibili'), ('captive.apple.com', 'DIRECT'), ('example.invalid', 'Proxies'),
                      # Supplemental AI sources: domains the pinned blackmatrix7 lists do not cover.
                      ('sora.com', 'AI'), ('chat.com', 'AI'), ('claude.com', 'AI'), ('claudeusercontent.com', 'AI'), ('platform.claude.com', 'AI'), ('mcp-proxy.anthropic.com', 'AI'), ('gemini.google.com', 'AI'), ('notebooklm.google.com', 'AI'), ('copilot.microsoft.com', 'Copilot'),
-                     ('x.ai', 'AI'), ('grok.com', 'AI'), ('grokipedia.com', 'AI'), ('perplexity.ai', 'AI'), ('perplexity.com', 'AI'), ('pplx.ai', 'AI'), ('x.com', 'Proxies')],
+                     ('x.ai', 'AI'), ('grok.com', 'AI'), ('grokipedia.com', 'AI'), ('grokusercontent.com', 'AI'), ('groksupport.com', 'AI'), ('perplexity.ai', 'AI'), ('perplexity.com', 'AI'), ('pplx.ai', 'AI'), ('x.com', 'Proxies')],
         '回国': [('www.bilibili.com', '回国代理'), ('www.google.com', 'DIRECT'), ('paypal.com', 'DIRECT'), ('chatgpt.com', 'DIRECT'), ('example.invalid', 'DIRECT'),
                  ('claude.com', 'DIRECT'), ('claudeusercontent.com', 'DIRECT'), ('sora.com', 'DIRECT'), ('gemini.google.com', 'DIRECT'), ('copilot.microsoft.com', 'DIRECT'),
-                 ('x.ai', 'DIRECT'), ('grok.com', 'DIRECT'), ('perplexity.ai', 'DIRECT')],
+                 ('x.ai', 'DIRECT'), ('grok.com', 'DIRECT'), ('grokusercontent.com', 'DIRECT'), ('perplexity.ai', 'DIRECT')],
         '只过滤不代理': [('www.google.com', 'DIRECT'), ('github.com', 'DIRECT'), ('example.invalid', 'DIRECT'),
                          ('claude.com', 'DIRECT'), ('sora.com', 'DIRECT'), ('grok.com', 'DIRECT'), ('perplexity.ai', 'DIRECT')],
     }
@@ -203,8 +225,9 @@ def main():
                 require(not any(profiles.AI_REPO in u for u in urls),
                         f'{client}/{scene}: profile still references {profiles.AI_REPO} directly')
                 if scene != '只过滤不代理':
-                    require(sum(1 for u in urls if 'AISources/' in u) == len(profiles.POLICY['ai_sources']),
-                            f'{client}/{scene}: expected one snapshot reference per AI source')
+                    expected = len(profiles.POLICY['ai_sources']) + (1 if profiles.POLICY.get('ai_extra') else 0)
+                    require(sum(1 for u in urls if 'AISources/' in u) == expected,
+                            f'{client}/{scene}: expected {expected} snapshot references')
                 # Every supplemental AI source must be wired in the routing scenes; only 科学上网
                 # defines their selectable groups (回国/仅过滤 keep AI traffic explicitly DIRECT).
                 wired = ' '.join(rules)
@@ -259,6 +282,9 @@ def main():
                             url = profiles.snapshot_url(lock, 'Clash', profiles.AI_PREFIX + provider_of(category), r) \
                                 if provider_of(category) in profiles.POLICY['ai_sources'] else r['url']
                             by_url[url] = (cache, ref, r)
+                        if profiles.POLICY.get('ai_extra'):
+                            extra = profiles.snapshot_path('Clash', profiles.AI_EXTRA, 'classical')
+                            by_url[profiles.RAW_BASE + 'AISources/Clash/' + extra.name] = (extra.parent, Path('.'), {'key': extra.name})
                         for provider in data['rule-providers'].values():
                             cache, ref, r = by_url[provider['url']]
                             profiles.atomic(home / provider['path'], (cache / ref / r['key']).read_bytes())
@@ -282,7 +308,7 @@ def main():
                 actual = any(matches(rule, domain, None) for rule in payload)
                 require(actual == expected, 'Optional blocklist scope regression')
                 optional_checks += 1
-    result = {'profiles': count, 'routing_assertions': checks, 'mihomo_native_checks': native, 'source_resources': total_resources, 'optional_blocklist_assertions': optional_checks, 'denylisted_keywords': suppressed, 'result': 'passed'}
+    result = {'profiles': count, 'routing_assertions': checks, 'mihomo_native_checks': native, 'source_resources': total_resources, 'optional_blocklist_assertions': optional_checks, 'denylisted_entries': suppressed, 'result': 'passed'}
     print(json.dumps(result, ensure_ascii=False))
 
 

@@ -134,6 +134,13 @@ rule-providers:
     url: https://raw.githubusercontent.com/nanguoyu/Profiles/main/AISources/Clash/copilot.yaml
     path: ./rules/copilot-classical-c6dc8d089b51.yaml
     interval: 86400
+  ai-extra-classical:
+    type: http
+    behavior: classical
+    format: yaml
+    url: https://raw.githubusercontent.com/nanguoyu/Profiles/main/AISources/Clash/ai-extra.yaml
+    path: ./rules/ai-extra-classical-local.yaml
+    interval: 86400
   OpenAI-classical:
     type: http
     behavior: classical
@@ -249,6 +256,7 @@ rules:
 - RULE-SET,x-ai-classical,AI,no-resolve
 - RULE-SET,perplexity-classical,AI,no-resolve
 - RULE-SET,copilot-classical,Copilot,no-resolve
+- RULE-SET,ai-extra-classical,AI,no-resolve
 - RULE-SET,OpenAI-classical,AI,no-resolve
 - RULE-SET,Claude-classical,AI,no-resolve
 - RULE-SET,Telegram-classical,Proxies,no-resolve
