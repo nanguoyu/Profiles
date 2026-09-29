@@ -55,7 +55,7 @@ def get(url, optional=False):
         raise
 
 
-def entries(data, kind, client):
+def entries(data, kind, client, category=None):
     text = data.decode('utf-8-sig')
     if client == 'Clash':
         parsed = yaml.safe_load(text)
@@ -73,14 +73,22 @@ def entries(data, kind, client):
         allowed = {'DOMAIN', 'DOMAIN-SUFFIX', 'DOMAIN-KEYWORD', 'DOMAIN-WILDCARD', 'DOMAIN-REGEX', 'IP-CIDR', 'IP-CIDR6', 'IP-ASN', 'USER-AGENT', 'PROCESS-NAME', 'PROCESS-PATH', 'URL-REGEX', 'AND', 'OR', 'NOT', 'DST-PORT', 'DEST-PORT', 'NETWORK', 'PROTOCOL'}
         if any(x.split(',')[0] not in allowed for x in result):
             raise ValueError('Unexpected rule type or embedded policy in source')
+    # A declared keyword denylist drops entries that are broader than the source intended, e.g.
+    # sift also captures unrelated siftscience.com. Every caller filters through here so the
+    # lock entry count stays the count that actually reaches the generated profiles.
+    denied = {x.strip().lower() for x in POLICY.get('keyword_denylist', {}).get(category, [])}
+    if denied:
+        result = [x for x in result if x.strip().lower() not in denied]
+        if not result:
+            raise ValueError('Keyword denylist removed every entry of ' + str(category))
     return result
 
 
-def load_resource(cache, ref, key, url, kind, client, optional=False):
+def load_resource(cache, ref, key, url, kind, client, category, optional=False):
     data = get(url, optional=optional)
     if data is None:
         return None
-    parsed = entries(data, kind, client)
+    parsed = entries(data, kind, client, category)
     atomic(cache / ref / key, data)
     updated = re.search(r'^# UPDATED:\s*(.+)$', data.decode('utf-8-sig'), re.M)
     return {'key': key, 'kind': kind, 'url': url, 'sha256': hashlib.sha256(data).hexdigest(),
@@ -91,7 +99,7 @@ def discover_ai(ref, client, provider):
     """Supplemental AI rules ship one classical file per provider and client."""
     extension = '.yaml' if client == 'Clash' else '.list'
     url = f'https://raw.githubusercontent.com/{AI_REPO}/{ref}/rules/{client.lower()}/{provider}{extension}'
-    resource = load_resource(AI_CACHE, ref, f'{client}-AI-{provider}', url, 'classical', client)
+    resource = load_resource(AI_CACHE, ref, f'{client}-AI-{provider}', url, 'classical', client, provider)
     if resource is None:
         raise ValueError(f'{AI_REPO} is missing {client}/{provider}')
     return client, provider, [resource]
@@ -103,7 +111,7 @@ def discover(ref, client, category):
     filenames = [('domain', category + ('_Domain.yaml' if client == 'Clash' else '_Domain.list')),
                  ('classical', category + ('.yaml' if client == 'Clash' else '.list'))]
     for kind, filename in filenames:
-        resource = load_resource(CACHE, ref, f'{client}-{category}-{kind}', base + filename, kind, client,
+        resource = load_resource(CACHE, ref, f'{client}-{category}-{kind}', base + filename, kind, client, category,
                                  optional=(kind == 'domain'))
         if resource is not None:
             resources.append(resource)
@@ -111,7 +119,7 @@ def discover(ref, client, category):
     text = (CACHE / ref / f'{client}-{category}-classical').read_text()
     counts = re.findall(r'^# (?:DOMAIN|DOMAIN-SUFFIX):\s*(\d+)', text, re.M)
     advertised = sum(map(int, counts))
-    actual_classical = entries(text.encode(), 'classical', client)
+    actual_classical = entries(text.encode(), 'classical', client, category)
     actual_domains = sum(x.startswith(('DOMAIN,', 'DOMAIN-SUFFIX,')) for x in actual_classical)
     if advertised > actual_domains + 10 and not any(x['kind'] == 'domain' for x in resources):
         raise ValueError(f'{client}/{category}: missing domain companion')

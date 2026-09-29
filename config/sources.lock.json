@@ -5,7 +5,7 @@
         "anthropic": [
           {
             "bytes": 1794,
-            "entries": 49,
+            "entries": 48,
             "key": "Clash-AI-anthropic",
             "kind": "classical",
             "sha256": "e7d3ec7dc591dae0882bb1a3e66e7ec351f869e46afd348c454d949f3a8c86a8",
@@ -51,7 +51,7 @@
         "anthropic": [
           {
             "bytes": 1583,
-            "entries": 49,
+            "entries": 48,
             "key": "Shadowrocket-AI-anthropic",
             "kind": "classical",
             "sha256": "b55177db8f23abd7a9bb20b9d7860a24195c1fde532e1baebfd21f4451a8d5e7",
@@ -97,7 +97,7 @@
         "anthropic": [
           {
             "bytes": 1583,
-            "entries": 49,
+            "entries": 48,
             "key": "Surge-AI-anthropic",
             "kind": "classical",
             "sha256": "b55177db8f23abd7a9bb20b9d7860a24195c1fde532e1baebfd21f4451a8d5e7",

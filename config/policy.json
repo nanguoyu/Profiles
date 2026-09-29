@@ -42,6 +42,11 @@
     "google-ai": "AI",
     "copilot": "Copilot"
   },
+  "keyword_denylist": {
+    "anthropic": [
+      "DOMAIN-KEYWORD,sift"
+    ]
+  },
   "direct_exceptions": [
     "DOMAIN,captive.apple.com"
   ],

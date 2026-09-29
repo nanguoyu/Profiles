@@ -130,13 +130,29 @@ def main():
             if r['kind'] == 'domain':
                 resources[client]['_domain'].add(category)
         require('/' + ref + '/' in r['url'], 'Unpinned source')
-        payload = profiles.entries((cache / ref / r['key']).read_bytes(), r['kind'], client)
+        payload = profiles.entries((cache / ref / r['key']).read_bytes(), r['kind'], client, category)
         require(len(payload) == r['entries'], 'Source count changed')
         key = category + '-' + r['kind'] if client == 'Clash' else r['url']
         resources.setdefault(client, {})[key] = (r['kind'], payload)
     for client in profiles.CLIENTS:
         require(resources[client].pop('_domain') == {'AdvertisingLite', 'Privacy', 'China', 'Apple'},
                 f'{client}: missing split domain source')
+    # A denylisted keyword must still exist in the raw upstream file (else policy.json is stale),
+    # and must be absent from the effective payload that drives the generated profiles.
+    suppressed = 0
+    for category, denied in profiles.POLICY.get('keyword_denylist', {}).items():
+        for cache, ref, client, name, r in profiles.resources(lock):
+            if name != category:
+                continue
+            raw = profiles.entries((cache / ref / r['key']).read_bytes(), r['kind'], client)
+            effective = resources[client][(name + '-' + r['kind']) if client == 'Clash' else r['url']][1]
+            for expression in denied:
+                needle = expression.strip().lower()
+                require(needle in {x.strip().lower() for x in raw},
+                        f'{client}/{category}: denylist entry no longer exists upstream: {expression}')
+                require(needle not in {x.strip().lower() for x in effective},
+                        f'{client}/{category}: denylisted {expression} survived into the effective rules')
+                suppressed += 1
     total_resources = sum(1 for _ in profiles.resources(lock))
     roots = [profiles.ROOT]
     # Domains the pinned filters must keep rejecting. Guards a regression where a filter or
@@ -233,7 +249,7 @@ def main():
                 actual = any(matches(rule, domain, None) for rule in payload)
                 require(actual == expected, 'Optional blocklist scope regression')
                 optional_checks += 1
-    result = {'profiles': count, 'routing_assertions': checks, 'mihomo_native_checks': native, 'source_resources': total_resources, 'optional_blocklist_assertions': optional_checks, 'result': 'passed'}
+    result = {'profiles': count, 'routing_assertions': checks, 'mihomo_native_checks': native, 'source_resources': total_resources, 'optional_blocklist_assertions': optional_checks, 'denylisted_keywords': suppressed, 'result': 'passed'}
     print(json.dumps(result, ensure_ascii=False))
 
 
